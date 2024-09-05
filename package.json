@@ -1,15 +1,15 @@
 {
-	"name": "library-name",
+	"name": "factor-four",
 	"version": "1.0.0",
 	"license": "MIT",
 	"type": "module",
 	"description": "Your description here",
-	"author": "Name <email>",
-	"homepage": "https://example.com",
-	"bugs": "https://github.com/example/library-name/issues",
+	"author": "Marcos Essindi <marcessindi@me.com>",
+	"homepage": "https://github.com/dunkelbraun/factor-four",
+	"bugs": "https://github.com/dunkelbraun/factor-four/issues",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/example/library-name"
+		"url": "https://github.com/dunkelbraun/factor-four"
 	},
 	"main": "./dist/index.js",
 	"module": "./dist/esm/index.js",
