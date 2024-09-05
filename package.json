@@ -1,0 +1,67 @@
+{
+	"name": "library-name",
+	"version": "1.0.0",
+	"license": "MIT",
+	"type": "module",
+	"description": "Your description here",
+	"author": "Name <email>",
+	"homepage": "https://example.com",
+	"bugs": "https://github.com/example/library-name/issues",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/example/library-name"
+	},
+	"main": "./dist/index.js",
+	"module": "./dist/esm/index.js",
+	"types": "./dist/esm/index.d.ts",
+	"bin": {},
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/esm/index.d.ts",
+				"default": "./dist/esm/index.js"
+			},
+			"require": {
+				"types": "./dist/cjs/index.d.ts",
+				"default": "./dist/cjs/index.js"
+			}
+		}
+	},
+	"files": [
+		"dist/**/*"
+	],
+	"scripts": {
+		"prebuild": "rm -rf dist/*",
+		"build": "tsc -b tsconfig.build.esm.json && tsc -b tsconfig.build.cjs.json",
+		"postbuild": "npm run alias && npm run make-package",
+		"alias": "tsc-alias -p tsconfig.build.esm.json --outDir dist/esm --verbose && tsc-alias -p tsconfig.build.cjs.json --outDir dist/cjs --verbose",
+		"make-package": "echo '{\n  \"type\": \"module\"\n}' > dist/esm/package.json && echo '{\n  \"type\": \"commonjs\"\n}' > dist/cjs/package.json",
+		"check": "npm run check:format && npm run check:lint && npm run check:skott",
+		"check:format": "prettier --check .",
+		"check:lint": "npx eslint .",
+		"check:skott": "skott --displayMode=file-tree --showCircularDependencies --no-trackTypeOnlyDependencies --cwd src",
+		"format": "prettier --write .",
+		"prepack": "npm run check && npm run build && rm -rf build && mkdir build",
+		"test": "vitest --run",
+		"test:watch": "vitest --ui --coverage --no-open"
+	},
+	"devDependencies": {
+		"@eslint/compat": "^1.1.1",
+		"@typescript-eslint/eslint-plugin": "^8.3.0",
+		"@typescript-eslint/parser": "^8.3.0",
+		"@vitest/coverage-istanbul": "^2.0.5",
+		"@vitest/coverage-v8": "^2.0.5",
+		"@vitest/ui": "^2.0.5",
+		"eslint": "^9.9.1",
+		"eslint-config-prettier": "^9.1.0",
+		"prettier": "^3.3.3",
+		"prettier-plugin-organize-imports": "^4.0.0",
+		"skott": "^0.35.2",
+		"tsc-alias": "^1.8.10",
+		"type-fest": "^4.25.0",
+		"type-testing": "^0.2.0",
+		"typescript": "^5.5.4",
+		"vite-tsconfig-paths": "^5.0.1",
+		"vitest": "^2.0.5"
+	}
+}
