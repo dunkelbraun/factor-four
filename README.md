@@ -1,3 +1,3 @@
-# ts-lib-starter
+# factor-four
 
-Template for starting TypeScript library projects.
+Typescript interfaces for web application backing services.
