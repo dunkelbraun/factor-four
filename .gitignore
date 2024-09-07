@@ -6,5 +6,9 @@ node_modules
 /dist
 /tmp
 
-.env
+.env*
+!.env.sample
+
 .vscode
+
+/data
