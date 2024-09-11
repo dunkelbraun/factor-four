@@ -3,8 +3,41 @@ import {
 	deleteMailpitMessages,
 	mailpitMessages,
 } from "test/__setup__/mailpit.js";
-import { afterEach, assert, beforeEach, expect, test } from "vitest";
+import { GenericContainer, type StartedTestContainer } from "testcontainers";
+import {
+	afterAll,
+	afterEach,
+	assert,
+	beforeAll,
+	beforeEach,
+	expect,
+	test,
+} from "vitest";
 import { NodeMailer } from "~/mailer/adapters/nodemailer.js";
+
+let container: StartedTestContainer;
+
+beforeAll(async () => {
+	let config: Record<string, string> = {};
+	dotenv.config({ path: ".env.test", processEnv: config });
+	console.log(`axllent/mailpit:${config.MAILPIT_IMAGE_TAG}`);
+	container = await new GenericContainer(
+		`axllent/mailpit:${config.MAILPIT_IMAGE_TAG}`,
+	)
+		.withExposedPorts({
+			container: 8025,
+			host: Number(config.MAILPIT_WEB_PORT),
+		})
+		.withExposedPorts({
+			container: 1025,
+			host: Number(config.MAILPIT_SMTP_PORT),
+		})
+		.start();
+});
+
+afterAll(async () => {
+	await container.stop();
+});
 
 beforeEach(() => {
 	let config: Record<string, string> = {};

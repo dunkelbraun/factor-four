@@ -60,6 +60,7 @@
 		"prettier": "^3.3.3",
 		"prettier-plugin-organize-imports": "^4.0.0",
 		"skott": "^0.35.2",
+		"testcontainers": "^10.13.1",
 		"tsc-alias": "^1.8.10",
 		"type-fest": "^4.25.0",
 		"type-testing": "^0.2.0",
