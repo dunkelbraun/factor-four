@@ -25,7 +25,6 @@ export async function messageToNodeMailerMessage(message: Message) {
 		),
 		attachments: attachments,
 	};
-	console.dir(nodemailerMessage);
 	return nodemailerMessage;
 }
 
