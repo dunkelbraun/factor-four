@@ -47,6 +47,7 @@
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.1.1",
+		"@types/memcached": "^2.2.10",
 		"@types/nodemailer": "^6.4.15",
 		"@typescript-eslint/eslint-plugin": "^8.3.0",
 		"@typescript-eslint/parser": "^8.3.0",
@@ -71,6 +72,8 @@
 	"dependencies": {
 		"@epic-web/remember": "^1.1.0",
 		"case-anything": "^3.1.0",
+		"memcache-client": "^1.0.5",
+		"memcached": "^2.2.2",
 		"redis": "^4.7.0",
 		"resend": "^4.0.0"
 	}
