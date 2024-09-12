@@ -4,7 +4,6 @@ import { GenericContainer } from "testcontainers";
 export async function startMailPitContainer() {
 	let config: Record<string, string> = {};
 	dotenv.config({ path: ".env.test", processEnv: config });
-	console.log(`axllent/mailpit:${config.MAILPIT_IMAGE_TAG}`);
 	return await new GenericContainer(
 		`axllent/mailpit:${config.MAILPIT_IMAGE_TAG}`,
 	)

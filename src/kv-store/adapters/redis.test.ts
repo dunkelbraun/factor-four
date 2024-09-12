@@ -34,7 +34,6 @@ beforeEach<RedisTestContext>(async (context) => {
 	let config: Record<string, string> = {};
 	dotenv.config({ path: ".env.test", processEnv: config });
 	context.connectionURL = `redis://localhost:${config.REDIS_PORT}`;
-	console.log(context.connectionURL);
 	process.env.REDIS_TEST_REDIS_URL = context.connectionURL;
 	context.client = createClient({
 		url: context.connectionURL,
