@@ -5,7 +5,7 @@ import {
 } from "test/__setup__/mailpit.js";
 import { type StartedTestContainer } from "testcontainers";
 import { afterEach, assert, beforeEach, test } from "vitest";
-import { SMTPMailer } from "~/mailer/adapters/smtp.js";
+import { SMTPMailer } from "~/mailer/adapters/smtp/smtp.js";
 
 interface SMTPMailerTextContext {
 	container?: StartedTestContainer;
