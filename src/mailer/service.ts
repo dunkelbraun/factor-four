@@ -19,10 +19,10 @@ export class Mailer<
 	 */
 	constructor(public options: MailerOptions<TAdapter, TLocalAdapter>) {
 		this.name = options.name;
-		this.adapter = new options.adapter(this.name);
+		this.adapter = options.adapter;
 		this.localAdapter =
 			options.localAdapter !== undefined
-				? new options.localAdapter(this.name)
+				? options.localAdapter
 				: (this.adapter as unknown as TLocalAdapter);
 	}
 
@@ -51,11 +51,11 @@ export interface MailerOptions<
 	/**
 	 * Adapter to use in production environments.
 	 */
-	adapter: new (name: string) => TAdapter;
+	adapter: TAdapter;
 	/**
 	 * Adapter to use in local environments.
 	 *
 	 * @default adapter
 	 */
-	localAdapter?: new (name: string) => TLocalAdapter;
+	localAdapter?: TLocalAdapter;
 }

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { assert, describe, test } from "vitest";
+import { assert, describe, expect, test } from "vitest";
 import type { Message } from "~/mailer/mailer.js";
 import { Mailer } from "~/mailer/service.js";
 
@@ -7,7 +7,7 @@ describe("Mailer service", { sequential: true, concurrent: false }, () => {
 	test("service name", () => {
 		const mailer = new Mailer({
 			name: "test-mailer",
-			adapter: TestAdapter,
+			adapter: new TestAdapter(),
 		});
 		assert.strictEqual(mailer.name, "test-mailer");
 	});
@@ -15,34 +15,28 @@ describe("Mailer service", { sequential: true, concurrent: false }, () => {
 	test("custom local adapter", () => {
 		const mailer = new Mailer({
 			name: "test-mailer",
-			adapter: TestAdapter,
-			localAdapter: TestAdapter,
+			adapter: new TestAdapter(),
+			localAdapter: new TestAdapter(),
 		});
 
-		assert.notStrictEqual(
-			(mailer.adapter as TestAdapter).uuid,
-			(mailer.localAdapter as TestAdapter).uuid,
-		);
+		assert.notStrictEqual(mailer.adapter.uuid, mailer.localAdapter.uuid);
 	});
 
 	test("same as adapter when not defined", () => {
 		const mailer = new Mailer({
 			name: "test-mailer",
-			adapter: TestAdapter,
+			adapter: new TestAdapter(),
 		});
 
-		assert.strictEqual(
-			(mailer.adapter as TestAdapter).uuid,
-			(mailer.localAdapter as TestAdapter).uuid,
-		);
+		assert.strictEqual(mailer.adapter.uuid, mailer.localAdapter.uuid);
 	});
 
 	test("sends emails through the adapter by default", async () => {
 		process.env.F4_ENV = undefined;
 		const mailer = new Mailer({
 			name: "test-mailer",
-			adapter: TestAdapter,
-			localAdapter: TestAdapter,
+			adapter: new TestAdapter(),
+			localAdapter: new TestAdapter(),
 		});
 
 		const message = {
@@ -54,16 +48,16 @@ describe("Mailer service", { sequential: true, concurrent: false }, () => {
 
 		await mailer.send(message);
 
-		assert.equal((mailer.adapter as any).messages.length, 1);
-		assert.equal((mailer.localAdapter as any).messages.length, 0);
+		assert.equal(mailer.adapter.messages.length, 1);
+		assert.equal(mailer.localAdapter.messages.length, 0);
 	});
 
 	test("sends emails through the local adapter when F4_ENV is local", async () => {
 		process.env.F4_ENV = "local";
 		const mailer = new Mailer({
 			name: "test-mailer",
-			adapter: TestAdapter,
-			localAdapter: TestAdapter,
+			adapter: new TestAdapter(),
+			localAdapter: new TestAdapter(),
 		});
 
 		const message = {
@@ -75,18 +69,27 @@ describe("Mailer service", { sequential: true, concurrent: false }, () => {
 
 		await mailer.send(message);
 
-		assert.equal((mailer.localAdapter as any).messages.length, 1);
-		assert.equal((mailer.adapter as any).messages.length, 0);
+		assert.equal(mailer.localAdapter.messages.length, 1);
+		assert.equal(mailer.adapter.messages.length, 0);
+	});
+
+	test("adapter and local adapter class", async () => {
+		const mailer = new Mailer({
+			name: "test-mailer",
+			adapter: new TestAdapter(),
+			localAdapter: new TestAdapterTwo(),
+		});
+
+		expect(mailer.adapter).toBeInstanceOf(TestAdapter);
+		expect(mailer.localAdapter).toBeInstanceOf(TestAdapterTwo);
 	});
 });
 
 class TestAdapter {
-	mailerId: string;
 	uuid: string;
 	messages: Message[] = [];
 
-	constructor(mailerId: string) {
-		this.mailerId = mailerId;
+	constructor() {
 		this.uuid = randomUUID();
 	}
 	send(message: Message) {
@@ -94,3 +97,5 @@ class TestAdapter {
 		return new Promise<boolean>((resolve) => resolve(true));
 	}
 }
+
+class TestAdapterTwo extends TestAdapter {}
