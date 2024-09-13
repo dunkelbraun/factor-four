@@ -72,6 +72,7 @@
 	"dependencies": {
 		"@aws-sdk/client-ses": "^3.650.0",
 		"@epic-web/remember": "^1.1.0",
+		"aws-ses-v2-local": "^2.4.0",
 		"case-anything": "^3.1.0",
 		"get-port": "^7.1.0",
 		"memcache-client": "^1.0.5",
