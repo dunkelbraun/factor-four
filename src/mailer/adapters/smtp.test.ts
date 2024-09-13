@@ -41,7 +41,7 @@ test<SMTPMailerTextContext>("send emails through smtp server", async (context) =
 		},
 	});
 
-	const { container, hostPorts } = await nodeMailer.testContainer();
+	const { container, hostPorts } = await nodeMailer.localContainer();
 	context.webPort = hostPorts.web;
 	context.container = await container.start();
 

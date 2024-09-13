@@ -36,7 +36,7 @@ export class SMTPMailer
 		return true;
 	}
 
-	async testContainer(options?: SMTPTestContainerOptions) {
+	async localContainer() {
 		const hostPorts = {
 			smtp: this.#options.port
 				? this.#options.port
@@ -50,29 +50,6 @@ export class SMTPMailer
 			.withExposedPorts({ container: 8025, host: hostPorts.web });
 		return { container, hostPorts };
 	}
-}
-
-interface SMTPTestContainerOptions {
-	/**
-	 * Docker image to use.
-	 *
-	 */
-	image?: {
-		/**
-		 * Image name.
-		 *
-		 * @default axllent/mailpit
-		 */
-		name?: string;
-		/**
-		 * Image tag.
-		 *
-		 * @default latest
-		 */
-		tag?: string;
-	};
-	smtpPort?: number;
-	webPort?: number;
 }
 
 // Based on NodeMailer SMTPOptions.

@@ -1,7 +1,7 @@
 import type { PortWithBinding } from "testcontainers";
 
 export interface TestContainer<T> {
-	testContainer: (options?: any) => Promise<T>;
+	localContainer: (options?: any) => Promise<T>;
 }
 
 export interface TestContainerOptions {
