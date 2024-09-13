@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import {
 	deleteMailpitMessages,
 	mailpitMessages,
-	startMailPitContainer,
 } from "test/__setup__/mailpit.js";
 import { type StartedTestContainer } from "testcontainers";
 import {
@@ -19,7 +18,11 @@ import { NodeMailer } from "~/mailer/adapters/nodemailer.js";
 let container: StartedTestContainer;
 
 beforeAll(async () => {
-	container = await startMailPitContainer();
+	container = await NodeMailer.testContainer({
+		image: { tag: "v1.20" },
+		webPort: 8026,
+		smtpPort: 1026,
+	}).start();
 });
 
 afterAll(async () => {

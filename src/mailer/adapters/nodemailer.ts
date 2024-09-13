@@ -1,7 +1,9 @@
 import { snakeCase } from "case-anything";
 import nodemailer from "nodemailer";
+import { GenericContainer } from "testcontainers";
 import { MailerAdapterBase } from "~/mailer/adapter.js";
 import { messageToNodeMailerMessage } from "~/mailer/lib/message-to-nodemailer.js";
+import type { TestContainer } from "~/mailer/lib/testcontainer.js";
 import type { Message } from "~/mailer/mailer.js";
 
 /**
@@ -10,7 +12,10 @@ import type { Message } from "~/mailer/mailer.js";
  * Expects an environment variable in the format `NODE_MAILER_${snakeCase(mailerId).toUpperCase()}_URL` with
  * the SMTP server connection string.
  */
-export class NodeMailer extends MailerAdapterBase {
+export class NodeMailer
+	extends MailerAdapterBase
+	implements TestContainer<typeof NodeMailer>
+{
 	constructor(mailerId: string) {
 		super(mailerId);
 	}
@@ -30,4 +35,41 @@ export class NodeMailer extends MailerAdapterBase {
 		}
 		return urlFromEnv;
 	}
+
+	static testContainer(options?: NodeMailerTestContainerOptions) {
+		return new GenericContainer(
+			`${options?.image?.name ?? "axllent/mailpit"}:${options?.image?.tag ?? "latest"}`,
+		)
+			.withExposedPorts({
+				container: 1025,
+				host: options?.smtpPort ?? 1025,
+			})
+			.withExposedPorts({
+				container: 8025,
+				host: options?.webPort ?? 8025,
+			});
+	}
+}
+
+interface NodeMailerTestContainerOptions {
+	/**
+	 * Docker image to use.
+	 *
+	 */
+	image?: {
+		/**
+		 * Image name.
+		 *
+		 * @default axllent/mailpit
+		 */
+		name?: string;
+		/**
+		 * Image tag.
+		 *
+		 * @default latest
+		 */
+		tag?: string;
+	};
+	smtpPort?: number;
+	webPort?: number;
 }
