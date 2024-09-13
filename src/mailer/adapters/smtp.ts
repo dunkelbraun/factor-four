@@ -1,3 +1,4 @@
+import getPort, { portNumbers } from "get-port";
 import nodemailer from "nodemailer";
 import { GenericContainer } from "testcontainers";
 import { MailerAdapterBase } from "~/mailer/adapter.js";
@@ -11,9 +12,15 @@ import type { Message } from "~/mailer/mailer.js";
  */
 export class SMTPMailer
 	extends MailerAdapterBase
-	implements TestContainer<typeof SMTPMailer>
+	implements
+		TestContainer<{
+			container: GenericContainer;
+			hostPorts: { smtp: number; web: number };
+		}>
 {
 	#options: SMTPOptions = {};
+	#testContainerImage: string = "axllent/mailpit";
+	#testContainerImageTag: string = "latest";
 
 	constructor(id: string, options: SMTPOptions) {
 		super(id);
@@ -29,18 +36,19 @@ export class SMTPMailer
 		return true;
 	}
 
-	static testContainer(options?: SMTPTestContainerOptions) {
-		return new GenericContainer(
-			`${options?.image?.name ?? "axllent/mailpit"}:${options?.image?.tag ?? "latest"}`,
+	async testContainer(options?: SMTPTestContainerOptions) {
+		const hostPorts = {
+			smtp: this.#options.port
+				? this.#options.port
+				: await getPort({ port: portNumbers(1025, 1100) }),
+			web: await getPort({ port: portNumbers(8025, 8100) }),
+		};
+		const container = new GenericContainer(
+			`${this.#testContainerImage}:${this.#testContainerImageTag}`,
 		)
-			.withExposedPorts({
-				container: 1025,
-				host: options?.smtpPort ?? 1025,
-			})
-			.withExposedPorts({
-				container: 8025,
-				host: options?.webPort ?? 8025,
-			});
+			.withExposedPorts({ container: 1025, host: hostPorts.smtp })
+			.withExposedPorts({ container: 8025, host: hostPorts.web });
+		return { container, hostPorts };
 	}
 }
 

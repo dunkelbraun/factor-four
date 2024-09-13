@@ -1,30 +1,29 @@
-import dotenv from "dotenv";
+import getPort, { portNumbers } from "get-port";
 import {
 	deleteMailpitMessages,
 	mailpitMessages,
 } from "test/__setup__/mailpit.js";
 import { type StartedTestContainer } from "testcontainers";
-import { afterAll, afterEach, assert, beforeAll, test } from "vitest";
+import { afterEach, assert, beforeEach, test } from "vitest";
 import { SMTPMailer } from "~/mailer/adapters/smtp.js";
 
-let container: StartedTestContainer;
+interface SMTPMailerTextContext {
+	container?: StartedTestContainer;
+	port: number;
+	webPort?: number;
+}
 
-beforeAll(async () => {
-	let config: Record<string, string> = {};
-	dotenv.config({ path: ".env.test", processEnv: config });
-	container = await SMTPMailer.testContainer({
-		image: { tag: "v1.20" },
-		webPort: 8026,
-		smtpPort: Number(config.MAILPIT_SMTP_PORT),
-	}).start();
+beforeEach<SMTPMailerTextContext>(async (context) => {
+	context.port = await getPort({ port: portNumbers(1025, 1100) });
 });
 
-afterAll(async () => {
-	await container.stop();
-});
-
-afterEach(async (context) => {
-	await deleteMailpitMessages();
+afterEach<SMTPMailerTextContext>(async (context) => {
+	if (context.webPort !== undefined) {
+		await deleteMailpitMessages(context.webPort);
+	}
+	if (context.container !== undefined) {
+		await context.container.stop();
+	}
 });
 
 test("mailerId", async (context) => {
@@ -32,20 +31,19 @@ test("mailerId", async (context) => {
 	assert.equal(nodeMailer.id, "test-mailer");
 });
 
-test("send emails through smtp server", async (context) => {
-	let config: Record<string, string> = {};
-	dotenv.config({ path: ".env.test", processEnv: config });
-	const port = config.MAILPIT_SMTP_PORT;
-	assert(port);
-
+test<SMTPMailerTextContext>("send emails through smtp server", async (context) => {
 	const nodeMailer = new SMTPMailer("test-mailer", {
 		host: "localhost",
-		port: Number(port),
+		port: context.port,
 		auth: {
 			user: "username",
 			pass: "password",
 		},
 	});
+
+	const { container, hostPorts } = await nodeMailer.testContainer();
+	context.webPort = hostPorts.web;
+	context.container = await container.start();
 
 	await nodeMailer.send({
 		from: "sender@example.com",
@@ -61,7 +59,7 @@ test("send emails through smtp server", async (context) => {
 		text: "Another message!",
 	});
 
-	const messages = (await mailpitMessages()).messages;
+	const messages = (await mailpitMessages(hostPorts.web)).messages;
 	assert.equal(messages.length, 2);
 
 	const firstMessage = messages.at(-1);

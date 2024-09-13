@@ -1,11 +1,7 @@
-import type { GenericContainer, PortWithBinding } from "testcontainers";
+import type { PortWithBinding } from "testcontainers";
 
-export type TestContainer<
-	TClass extends TestContainerImplementation & { new (...args: any): any },
-> = InstanceType<TClass & TestContainerImplementation>;
-
-interface TestContainerImplementation {
-	testContainer: (options?: any) => GenericContainer;
+export interface TestContainer<T> {
+	testContainer: (options?: any) => Promise<T>;
 }
 
 export interface TestContainerOptions {
