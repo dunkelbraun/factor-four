@@ -6,84 +6,48 @@ import type { KeyValueStore as KeyValueStoreInterface } from "~/kv-store/kv-stor
 /**
  * Backing service for key value stores.
  */
-export class KeyValueStore<
-	TAdapter extends KeyValueStoreInterface,
-	TLocalAdapter extends KeyValueStoreInterface = TAdapter,
-> implements KeyValueStoreInterface
+export class KeyValueStore<TAdapter extends KeyValueStoreInterface>
+	implements KeyValueStoreInterface
 {
 	readonly name: string;
 	readonly adapter: TAdapter;
-	readonly localAdapter: TLocalAdapter | TAdapter;
 
 	/**
 	 * Returns a `KeyValueStore`.
-	 *
-	 * If not supplied, the `localAdapter` will be the same as the adapter.
 	 */
-	constructor(public options: KeyValueStoreOptions<TAdapter, TLocalAdapter>) {
+	constructor(public options: KeyValueStoreOptions<TAdapter>) {
 		this.name = options.name;
 		const kebabName = kebabCase(this.name);
 		this.adapter = remember(
 			hashValue(`kv-store-adapter-${kebabName}`),
 			() => new options.adapter(options.name),
 		);
-		this.localAdapter = remember(
-			hashValue(`kv-store-local-adapter${kebabName}`),
-			() =>
-				options.localAdapter !== undefined
-					? (new options.localAdapter(options.name) as unknown as TLocalAdapter)
-					: this.adapter,
-		);
 	}
 
 	async has(key: string) {
-		return await this.currentAdapter.has(key);
+		return await this.adapter.has(key);
 	}
 
 	async set(key: string, value: unknown) {
-		return await this.currentAdapter.set(key, value);
+		return await this.adapter.set(key, value);
 	}
 
 	async get<T = unknown>(key: string) {
-		return await this.currentAdapter.get<T>(key);
+		return await this.adapter.get<T>(key);
 	}
 
 	async remove(key: string) {
-		return await this.currentAdapter.remove(key);
-	}
-
-	/**
-	 * Returns the adapter for the current environment
-	 *
-	 * When the `F4_ENV` environment variable is set to "local" the current
-	 * adapter is `localAdapter`. Otherwise it's `adapter`.
-	 */
-	get currentAdapter() {
-		switch (process.env.F4_ENV) {
-			case "local":
-				return this.localAdapter;
-			default:
-				return this.adapter;
-		}
+		return await this.adapter.remove(key);
 	}
 }
 
-export interface KeyValueStoreOptions<
-	TAdapter extends KeyValueStoreInterface,
-	TLocalAdapter extends KeyValueStoreInterface = TAdapter,
-> {
+export interface KeyValueStoreOptions<TAdapter extends KeyValueStoreInterface> {
 	/**
 	 * Mailer name.
 	 */
 	name: string;
 	/**
-	 * Adapter to use in production environments.
+	 * Adapter to use.
 	 */
 	adapter: new (name: string) => TAdapter;
-	/**
-	 * Adapter to use in local environments.
-	 *
-	 * @default adapter
-	 */
-	localAdapter?: new (name: string) => TLocalAdapter;
 }
