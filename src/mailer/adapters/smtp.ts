@@ -7,14 +7,14 @@ import type { TestContainer } from "~/mailer/lib/testcontainer.js";
 import type { Message } from "~/mailer/mailer.js";
 
 /**
- * Nodemailer `Mailer` implementation.
+ * SMTP `Mailer` implementation.
  *
- * Expects an environment variable in the format `NODE_MAILER_${snakeCase(mailerId).toUpperCase()}_URL` with
+ * Expects an environment variable in the format `NODE_SMTP_MAILER_${snakeCase(mailerId).toUpperCase()}_URL` with
  * the SMTP server connection string.
  */
-export class NodeMailer
+export class SMTPMailer
 	extends MailerAdapterBase
-	implements TestContainer<typeof NodeMailer>
+	implements TestContainer<typeof SMTPMailer>
 {
 	async send(message: Message) {
 		const msg = await messageToNodeMailerMessage(message);
@@ -24,7 +24,7 @@ export class NodeMailer
 	}
 
 	get #nodeMailerURL() {
-		const envVar = `NODE_MAILER_${snakeCase(this.id).toUpperCase()}_URL`;
+		const envVar = `NODE_SMTP_MAILER_${snakeCase(this.id).toUpperCase()}_URL`;
 		const urlFromEnv = process.env[envVar];
 		if (urlFromEnv === undefined) {
 			throw new Error(`missing ${envVar}`);
@@ -32,7 +32,7 @@ export class NodeMailer
 		return urlFromEnv;
 	}
 
-	static testContainer(options?: NodeMailerTestContainerOptions) {
+	static testContainer(options?: SMTPTestContainerOptions) {
 		return new GenericContainer(
 			`${options?.image?.name ?? "axllent/mailpit"}:${options?.image?.tag ?? "latest"}`,
 		)
@@ -47,7 +47,7 @@ export class NodeMailer
 	}
 }
 
-interface NodeMailerTestContainerOptions {
+interface SMTPTestContainerOptions {
 	/**
 	 * Docker image to use.
 	 *

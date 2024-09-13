@@ -13,12 +13,12 @@ import {
 	expect,
 	test,
 } from "vitest";
-import { NodeMailer } from "~/mailer/adapters/nodemailer.js";
+import { SMTPMailer } from "~/mailer/adapters/smtp.js";
 
 let container: StartedTestContainer;
 
 beforeAll(async () => {
-	container = await NodeMailer.testContainer({
+	container = await SMTPMailer.testContainer({
 		image: { tag: "v1.20" },
 		webPort: 8026,
 		smtpPort: 1026,
@@ -32,7 +32,7 @@ afterAll(async () => {
 beforeEach(() => {
 	let config: Record<string, string> = {};
 	dotenv.config({ path: ".env.test", processEnv: config });
-	process.env.NODE_MAILER_TEST_MAILER_URL = `smtp://username:password@127.0.0.1:${config.MAILPIT_SMTP_PORT}`;
+	process.env.NODE_SMTP_MAILER_TEST_MAILER_URL = `smtp://username:password@127.0.0.1:${config.MAILPIT_SMTP_PORT}`;
 });
 
 afterEach(async (context) => {
@@ -40,12 +40,12 @@ afterEach(async (context) => {
 });
 
 test("mailerId", async (context) => {
-	const nodeMailer = new NodeMailer("test-mailer");
+	const nodeMailer = new SMTPMailer("test-mailer");
 	assert.equal(nodeMailer.id, "test-mailer");
 });
 
 test("send emails through smtp server", async (context) => {
-	const nodeMailer = new NodeMailer("test-mailer");
+	const nodeMailer = new SMTPMailer("test-mailer");
 
 	await nodeMailer.send({
 		from: "sender@example.com",
@@ -98,8 +98,8 @@ test("send emails through smtp server", async (context) => {
 });
 
 test("raises an error on undefined connection string URL", async (context) => {
-	const nodeMailer = new NodeMailer("test-mailer");
-	delete process.env.NODE_MAILER_TEST_MAILER_URL;
+	const nodeMailer = new SMTPMailer("test-mailer");
+	delete process.env.NODE_SMTP_MAILER_TEST_MAILER_URL;
 	expect(
 		async () =>
 			await nodeMailer.send({
@@ -108,5 +108,5 @@ test("raises an error on undefined connection string URL", async (context) => {
 				subject: "Message",
 				text: "I hope this message gets there!",
 			}),
-	).rejects.toThrowError("missing NODE_MAILER_TEST_MAILER_URL");
+	).rejects.toThrowError("missing NODE_SMTP_MAILER_TEST_MAILER_URL");
 });
