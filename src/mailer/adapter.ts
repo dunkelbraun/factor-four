@@ -11,12 +11,12 @@ export interface MailerAdapter {
  */
 export abstract class MailerAdapterBase implements Mailer {
 	/**
-	 * ID of the mailer that the adapter is attached to.
+	 * ID of the mailer.
 	 */
-	mailerId: string;
+	id: string;
 
-	constructor(mailerId: string) {
-		this.mailerId = mailerId;
+	constructor(id: string) {
+		this.id = id;
 	}
 
 	abstract send(message: Message): Promise<boolean>;

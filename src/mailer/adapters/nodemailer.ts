@@ -16,10 +16,6 @@ export class NodeMailer
 	extends MailerAdapterBase
 	implements TestContainer<typeof NodeMailer>
 {
-	constructor(mailerId: string) {
-		super(mailerId);
-	}
-
 	async send(message: Message) {
 		const msg = await messageToNodeMailerMessage(message);
 		const transport = nodemailer.createTransport(this.#nodeMailerURL);
@@ -28,7 +24,7 @@ export class NodeMailer
 	}
 
 	get #nodeMailerURL() {
-		const envVar = `NODE_MAILER_${snakeCase(this.mailerId).toUpperCase()}_URL`;
+		const envVar = `NODE_MAILER_${snakeCase(this.id).toUpperCase()}_URL`;
 		const urlFromEnv = process.env[envVar];
 		if (urlFromEnv === undefined) {
 			throw new Error(`missing ${envVar}`);

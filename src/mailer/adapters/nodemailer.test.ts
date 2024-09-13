@@ -41,7 +41,7 @@ afterEach(async (context) => {
 
 test("mailerId", async (context) => {
 	const nodeMailer = new NodeMailer("test-mailer");
-	assert.equal(nodeMailer.mailerId, "test-mailer");
+	assert.equal(nodeMailer.id, "test-mailer");
 });
 
 test("send emails through smtp server", async (context) => {

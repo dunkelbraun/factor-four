@@ -4,7 +4,7 @@ import type { Message } from "~/mailer/mailer.js";
 
 test("mailer adapter", () => {
 	const mailer = new TestAdapter("test-mailer");
-	assert.strictEqual(mailer.mailerId, "test-mailer");
+	assert.strictEqual(mailer.id, "test-mailer");
 });
 
 class TestAdapter extends MailerAdapterBase {
