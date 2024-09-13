@@ -1,6 +1,8 @@
 import { remember } from "@epic-web/remember";
 import { kebabCase } from "case-anything";
 import { hashValue } from "~/_lib/hash-value.js";
+import { MemcachedStore } from "~/kv-store/adapters/memcached.js";
+import { RedisStore } from "~/kv-store/adapters/redis.js";
 import type { KeyValueStore as KeyValueStoreInterface } from "~/kv-store/kv-store.js";
 
 /**
@@ -50,4 +52,36 @@ export interface KeyValueStoreOptions<TAdapter extends KeyValueStoreInterface> {
 	 * Adapter to use.
 	 */
 	adapter: TAdapter;
+}
+
+export type KVStoreKind = "memcached" | "redis";
+
+type DefineOptions<K> = {
+	kind: K;
+};
+
+type KeyValueStoreType<K> = K extends "memcached"
+	? KeyValueStore<MemcachedStore>
+	: K extends "redis"
+		? KeyValueStore<RedisStore>
+		: never;
+
+export function defineKeyValueStore<K extends KVStoreKind>(
+	id: string,
+	options: DefineOptions<K>,
+): KeyValueStoreType<K> {
+	switch (options.kind) {
+		case "memcached":
+			return new KeyValueStore({
+				name: id,
+				adapter: new MemcachedStore(id),
+			}) as KeyValueStoreType<K>;
+		case "redis":
+			return new KeyValueStore({
+				name: id,
+				adapter: new RedisStore(id),
+			}) as KeyValueStoreType<K>;
+		default:
+			throw new Error(`Unsupported key-value store kind: ${options.kind}`);
+	}
 }
