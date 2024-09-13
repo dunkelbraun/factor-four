@@ -6,7 +6,7 @@ describe("Key Value Store service", () => {
 	test("service name", () => {
 		const mailer = new KeyValueStore({
 			name: "test-kv",
-			adapter: RedisStore,
+			adapter: new RedisStore("test-store"),
 		});
 		assert.strictEqual(mailer.name, "test-kv");
 	});
@@ -14,7 +14,7 @@ describe("Key Value Store service", () => {
 	test("adapter class", async () => {
 		const store = new KeyValueStore({
 			name: "test-kv-5",
-			adapter: RedisStore,
+			adapter: new RedisStore("test-store"),
 		});
 
 		expect(store.adapter).toBeInstanceOf(RedisStore);

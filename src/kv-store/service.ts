@@ -20,7 +20,7 @@ export class KeyValueStore<TAdapter extends KeyValueStoreInterface>
 		const kebabName = kebabCase(this.name);
 		this.adapter = remember(
 			hashValue(`kv-store-adapter-${kebabName}`),
-			() => new options.adapter(options.name),
+			() => options.adapter,
 		);
 	}
 
@@ -49,5 +49,5 @@ export interface KeyValueStoreOptions<TAdapter extends KeyValueStoreInterface> {
 	/**
 	 * Adapter to use.
 	 */
-	adapter: new (name: string) => TAdapter;
+	adapter: TAdapter;
 }
