@@ -13,7 +13,7 @@ test("send emails", async () => {
 	process.env.F4_ENV = "local";
 	const mailer = new SESMailer("test-ses");
 
-	const { container, port } = await mailer.localContainer();
+	const { container, port } = await mailer.container();
 	await container.start();
 
 	await mailer.send({

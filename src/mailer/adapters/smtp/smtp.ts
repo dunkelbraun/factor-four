@@ -36,7 +36,7 @@ export class SMTPMailer
 		return true;
 	}
 
-	async localContainer() {
+	async container() {
 		const hostPorts = {
 			smtp: this.#options.port
 				? this.#options.port

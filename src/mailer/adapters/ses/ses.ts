@@ -63,7 +63,7 @@ export class SESMailer
 		return true;
 	}
 
-	async localContainer() {
+	async container() {
 		const container = await buildSESLocalContainer();
 		const port = await getPort({ port: portNumbers(8005, 8100) });
 		return {
