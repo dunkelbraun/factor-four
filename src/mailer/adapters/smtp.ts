@@ -1,4 +1,3 @@
-import { snakeCase } from "case-anything";
 import nodemailer from "nodemailer";
 import { GenericContainer } from "testcontainers";
 import { MailerAdapterBase } from "~/mailer/adapter.js";
@@ -7,29 +6,27 @@ import type { TestContainer } from "~/mailer/lib/testcontainer.js";
 import type { Message } from "~/mailer/mailer.js";
 
 /**
- * SMTP `Mailer` implementation.
+ * SMTP `Mailer` adapter.
  *
- * Expects an environment variable in the format `NODE_SMTP_MAILER_${snakeCase(mailerId).toUpperCase()}_URL` with
- * the SMTP server connection string.
  */
 export class SMTPMailer
 	extends MailerAdapterBase
 	implements TestContainer<typeof SMTPMailer>
 {
-	async send(message: Message) {
-		const msg = await messageToNodeMailerMessage(message);
-		const transport = nodemailer.createTransport(this.#nodeMailerURL);
-		await transport.sendMail(msg);
-		return true;
+	#options: SMTPOptions = {};
+
+	constructor(id: string, options: SMTPOptions) {
+		super(id);
+		if (options !== undefined) {
+			this.#options = options;
+		}
 	}
 
-	get #nodeMailerURL() {
-		const envVar = `NODE_SMTP_MAILER_${snakeCase(this.id).toUpperCase()}_URL`;
-		const urlFromEnv = process.env[envVar];
-		if (urlFromEnv === undefined) {
-			throw new Error(`missing ${envVar}`);
-		}
-		return urlFromEnv;
+	async send(message: Message) {
+		const msg = await messageToNodeMailerMessage(message);
+		const transport = nodemailer.createTransport(this.#options);
+		await transport.sendMail(msg);
+		return true;
 	}
 
 	static testContainer(options?: SMTPTestContainerOptions) {
@@ -68,4 +65,43 @@ interface SMTPTestContainerOptions {
 	};
 	smtpPort?: number;
 	webPort?: number;
+}
+
+// Based on NodeMailer SMTPOptions.
+interface SMTPOptions {
+	/** the hostname or IP address to connect to (defaults to ‘localhost’) */
+	host?: string | undefined;
+	/** the port to connect to (defaults to 25 or 465) */
+	port?: number | undefined;
+	/** defines authentication data */
+	auth?: {
+		/** the username */
+		user: string;
+		/** then password */
+		pass: string;
+	};
+	/** defines if the connection should use SSL (if true) or not (if false) */
+	secure?: boolean | undefined;
+	/** turns off STARTTLS support if true */
+	ignoreTLS?: boolean | undefined;
+	/** forces the client to use STARTTLS. Returns an error if upgrading the connection is not possible or fails. */
+	requireTLS?: boolean | undefined;
+	/** tries to use STARTTLS and continues normally if it fails */
+	opportunisticTLS?: boolean | undefined;
+	/** optional hostname of the client, used for identifying to the server */
+	name?: string | undefined;
+	/** the local interface to bind to for network connections */
+	localAddress?: string | undefined;
+	/** how many milliseconds to wait for the connection to establish */
+	connectionTimeout?: number | undefined;
+	/** how many milliseconds to wait for the greeting after connection is established */
+	greetingTimeout?: number | undefined;
+	/** how many milliseconds of inactivity to allow */
+	socketTimeout?: number | undefined;
+	/** how many milliseconds to wait for the DNS requests to be resolved */
+	dnsTimeout?: number | undefined;
+	/** if set to true, then logs SMTP traffic without message content */
+	transactionLog?: boolean | undefined;
+	/** if set to true, then logs SMTP traffic and message content, otherwise logs only transaction events */
+	debug?: boolean | undefined;
 }
