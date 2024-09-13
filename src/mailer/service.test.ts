@@ -13,7 +13,6 @@ describe("Mailer service", { sequential: true, concurrent: false }, () => {
 	});
 
 	test("sends emails through the adapter", async () => {
-		process.env.F4_ENV = undefined;
 		const mailer = new Mailer({
 			name: "test-mailer",
 			adapter: new TestAdapter(),
