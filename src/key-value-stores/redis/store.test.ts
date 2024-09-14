@@ -20,7 +20,7 @@ describe("Redis store", { sequential: true, concurrent: false }, async () => {
 	let redisStore: RedisStore;
 
 	beforeAll(async () => {
-		const { store } = defineRedisStore("test-redis");
+		const store = defineRedisStore("test-redis");
 		redisStore = store;
 		await store.container.start();
 		await store.client.connect();

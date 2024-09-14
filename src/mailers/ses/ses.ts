@@ -35,9 +35,5 @@ export class SESMailer {
 }
 
 export function defineSESMailer(id: string) {
-	const sesMailer = new SESMailer(id);
-	return {
-		ses: sesMailer,
-		container: sesMailer.container,
-	};
+	return new SESMailer(id);
 }

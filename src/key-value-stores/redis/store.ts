@@ -45,6 +45,5 @@ export class RedisStore {
 }
 
 export function defineRedisStore(id: string) {
-	const store = new RedisStore(id);
-	return { store, client: store.client, container: store.container };
+	return new RedisStore(id);
 }

@@ -39,6 +39,5 @@ export class MemcachedStore {
 }
 
 export function defineMemcachedStore(id: string) {
-	const store = new MemcachedStore(id);
-	return { store, container: store.container, client: store.client };
+	return new MemcachedStore(id);
 }

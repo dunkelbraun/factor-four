@@ -32,9 +32,5 @@ export class SMTPMailer {
 }
 
 export function defineSMTPMailer(id: string) {
-	const mailer = new SMTPMailer(id);
-	return {
-		mailer,
-		container: mailer.container,
-	};
+	return new SMTPMailer(id);
 }

@@ -8,7 +8,7 @@ let sesContainerInfo: SESContainerInfo;
 
 beforeAll(async () => {
 	process.env.F4_ENV = "local";
-	const { ses } = defineSESMailer("test-ses");
+	const ses = defineSESMailer("test-ses");
 	sesMailer = ses;
 	sesContainerInfo = await ses.container.start();
 });

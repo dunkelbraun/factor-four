@@ -24,7 +24,7 @@ describe(
 		let memcachedStore: MemcachedStore;
 
 		beforeAll(async () => {
-			const { store } = defineMemcachedStore("test-memcached-set");
+			const store = defineMemcachedStore("test-memcached-set");
 			memcachedStore = store;
 		});
 

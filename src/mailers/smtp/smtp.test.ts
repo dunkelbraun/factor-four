@@ -14,9 +14,9 @@ let testContainer: SMTPContainer;
 let containerInfo: SMTPContainerInfo;
 
 beforeAll(async () => {
-	const { mailer, container } = defineSMTPMailer("test-mailer");
+	const mailer = defineSMTPMailer("test-mailer");
 	testMailer = mailer;
-	testContainer = container;
+	testContainer = mailer.container;
 	containerInfo = await testContainer.start();
 });
 
