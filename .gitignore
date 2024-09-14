@@ -12,3 +12,7 @@ node_modules
 .vscode
 
 /data
+
+docs/.vitepress/dist
+docs/.vitepress/cache
+docs/reference
