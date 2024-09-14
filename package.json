@@ -12,19 +12,13 @@
 		"url": "https://github.com/dunkelbraun/factor-four"
 	},
 	"main": "./dist/index.js",
-	"module": "./dist/esm/index.js",
-	"types": "./dist/esm/index.d.ts",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"bin": {},
 	"exports": {
 		".": {
-			"import": {
-				"types": "./dist/esm/index.d.ts",
-				"default": "./dist/esm/index.js"
-			},
-			"require": {
-				"types": "./dist/cjs/index.d.ts",
-				"default": "./dist/cjs/index.js"
-			}
+			"types": "./dist/esm/index.d.ts",
+			"default": "./dist/esm/index.js"
 		}
 	},
 	"files": [
@@ -32,10 +26,9 @@
 	],
 	"scripts": {
 		"prebuild": "rm -rf dist/*",
-		"build": "tsc -b tsconfig.build.esm.json && tsc -b tsconfig.build.cjs.json",
-		"postbuild": "npm run alias && npm run make-package",
-		"alias": "tsc-alias -p tsconfig.build.esm.json --outDir dist/esm --verbose && tsc-alias -p tsconfig.build.cjs.json --outDir dist/cjs --verbose",
-		"make-package": "echo '{\n  \"type\": \"module\"\n}' > dist/esm/package.json && echo '{\n  \"type\": \"commonjs\"\n}' > dist/cjs/package.json",
+		"build": "tsc -b tsconfig.build.esm.json",
+		"postbuild": "npm run alias",
+		"alias": "tsc-alias -p tsconfig.build.esm.json --outDir dist --verbose",
 		"check": "npm run check:format && npm run check:lint && npm run check:skott",
 		"check:format": "prettier --check .",
 		"check:lint": "npx eslint .",
