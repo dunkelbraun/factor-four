@@ -1,7 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { assert, describe, expect, test } from "vitest";
+import { SESMailer } from "~/mailer/adapters/ses/ses.js";
+import { SMTPMailer } from "~/mailer/adapters/smtp/smtp.js";
 import type { Message } from "~/mailer/mailer.js";
-import { Mailer } from "~/mailer/service.js";
+import { defineMailer, Mailer } from "~/mailer/service.js";
 
 describe("Mailer service", { sequential: true, concurrent: false }, () => {
 	test("service name", () => {
@@ -37,6 +39,14 @@ describe("Mailer service", { sequential: true, concurrent: false }, () => {
 		});
 
 		expect(mailer.adapter).toBeInstanceOf(TestAdapter);
+	});
+
+	test("defineMailer", () => {
+		const smtpMailer = defineMailer("smtp-mailer", { kind: "smtp" });
+		expect(smtpMailer.adapter).toBeInstanceOf(SMTPMailer);
+
+		const sesMailer = defineMailer("ses-mailer", { kind: "ses" });
+		expect(sesMailer.adapter).toBeInstanceOf(SESMailer);
 	});
 });
 

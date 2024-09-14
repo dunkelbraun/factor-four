@@ -53,7 +53,7 @@ export class SMTPMailer
 }
 
 // Based on NodeMailer SMTPOptions.
-interface SMTPOptions {
+export interface SMTPOptions {
 	/** the hostname or IP address to connect to (defaults to ‘localhost’) */
 	host?: string | undefined;
 	/** the port to connect to (defaults to 25 or 465) */
