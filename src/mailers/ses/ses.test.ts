@@ -13,12 +13,6 @@ beforeAll(async () => {
 	startedContainer = await ses.container.start();
 }, 100000);
 
-// afterAll(async () => {
-// 	if (startedContainer) {
-// 		await startedContainer.stop();
-// 	}
-// });
-
 test("send emails", async () => {
 	await sesMailer.client.sendEmail({
 		Source: "sender@example.com",
