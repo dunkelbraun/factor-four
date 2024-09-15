@@ -1,6 +1,6 @@
 {
-	"name": "factor-four",
-	"version": "1.0.0",
+	"name": "@monolayer/factor-four",
+	"version": "0.1.0",
 	"license": "MIT",
 	"type": "module",
 	"description": "Backing services as first-class citizens in TypeScript applications",
