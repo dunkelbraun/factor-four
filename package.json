@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"license": "MIT",
 	"type": "module",
-	"description": "Typescript interfaces for web application backing services",
+	"description": "Backing services as first-class citizens in TypeScript applications",
 	"author": "Marcos Essindi <marcessindi@me.com>",
 	"homepage": "https://github.com/dunkelbraun/factor-four",
 	"bugs": "https://github.com/dunkelbraun/factor-four/issues",
