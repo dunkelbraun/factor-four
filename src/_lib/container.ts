@@ -1,7 +1,7 @@
 import getPort from "get-port";
 import { GenericContainer, getContainerRuntimeClient } from "testcontainers";
 
-interface ContainerOptions {
+export interface ContainerOptions {
 	name: string;
 	image: { tag: string; name: string };
 	portsToExpose?: number[];
