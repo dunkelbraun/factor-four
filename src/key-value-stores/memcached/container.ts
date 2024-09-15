@@ -1,38 +1,60 @@
-import getPort, { portNumbers } from "get-port";
-import { GenericContainer, type StartedTestContainer } from "testcontainers";
+import { snakeCase } from "case-anything";
+import { Container } from "~/_lib/container.js";
+import { StartedServerContainer } from "~/_lib/started-container.js";
 
-export class MemcachedContainer {
-	#envVarName: string;
-	#testContainerImage: string = "memcached";
-	#testContainerImageTag: string = "alpine";
-	#startedTestContainer?: StartedTestContainer;
+const MEMCACHED_IMAGE_NAME = "memcached";
+const MEMCACHED_IMAGE_TAG = "alpine";
+const MEMCACHED_SERVER_PORT = 11211;
 
-	constructor(envVarName: string) {
-		this.#envVarName = envVarName;
-	}
+export interface SMTPContainerOptions {
+	resourceId: string;
+	imageTag?: string;
+	connectionStringEnvVarName?: string;
+}
 
-	async start() {
-		const { container, hostPort, connectionString } = await this.#container();
-		const startedContainer = await container.start();
+export class MemcachedContainer extends Container {
+	#connectionStringEnvVarName?: string;
 
-		if (this.#startedTestContainer === undefined) {
-			this.#startedTestContainer = startedContainer;
+	constructor(options: SMTPContainerOptions) {
+		const name = snakeCase(`smtp_${options.resourceId}`);
+		const image = {
+			name: MEMCACHED_IMAGE_NAME,
+			tag: options.imageTag ?? MEMCACHED_IMAGE_TAG,
+		};
+		const portsToExpose = [MEMCACHED_SERVER_PORT];
+		super({ name, image, portsToExpose, persistenceVolumes: [] });
+
+		if (options.connectionStringEnvVarName) {
+			this.#connectionStringEnvVarName = options.connectionStringEnvVarName;
 		}
-		process.env[this.#envVarName] = connectionString;
-		return { hostPort, connectionString };
 	}
 
-	async stop() {
-		this.#startedTestContainer !== undefined &&
-			(await this.#startedTestContainer.stop());
+	override async start(): Promise<StartedMemcachedContainer> {
+		return new StartedMemcachedContainer(await super.start(), (container) =>
+			this.#addConnectionStringToEnvironment(container),
+		);
 	}
 
-	async #container() {
-		const hostPort = await getPort({ port: portNumbers(11211, 11230) });
-		const connectionString = `localhost:${hostPort}`;
-		const container = new GenericContainer(
-			`${this.#testContainerImage}:${this.#testContainerImageTag}`,
-		).withExposedPorts({ container: 11211, host: hostPort });
-		return { container, hostPort, connectionString };
+	async startPersisted(): Promise<StartedMemcachedContainer> {
+		return new StartedMemcachedContainer(
+			await super.startWithVolumes(),
+			(container) => this.#addConnectionStringToEnvironment(container),
+		);
+	}
+
+	#addConnectionStringToEnvironment(container: StartedMemcachedContainer) {
+		if (this.#connectionStringEnvVarName) {
+			process.env[this.#connectionStringEnvVarName] = container.connectionURL;
+		}
+	}
+}
+
+export class StartedMemcachedContainer extends StartedServerContainer<StartedMemcachedContainer> {
+	get serverPort() {
+		return this.getMappedPort(MEMCACHED_SERVER_PORT);
+	}
+
+	get connectionURL() {
+		return `${this.getHost()}:${this.serverPort}`;
 	}
 }

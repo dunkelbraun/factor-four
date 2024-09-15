@@ -1,10 +1,10 @@
-export async function mailpitMessages(port: number) {
-	const response = await fetch(`http://localhost:${port}/api/v1/messages`);
+import type { StartedSMTPContainer } from "~/mailers/smtp/container.js";
+
+export async function allMessages(container: StartedSMTPContainer) {
+	const response = await fetch(container.messagesApiURL);
 	return await response.json();
 }
 
-export async function deleteMailpitMessages(port: number) {
-	await fetch(`http://localhost:${port}/api/v1/messages`, {
-		method: "DELETE",
-	});
+export async function deleteAllMessages(container: StartedSMTPContainer) {
+	await fetch(container.messagesApiURL, { method: "DELETE" });
 }

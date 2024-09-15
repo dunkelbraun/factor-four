@@ -8,6 +8,7 @@ import {
 	describe,
 	test,
 } from "vitest";
+import type { StartedMemcachedContainer } from "~/key-value-stores/memcached/container.js";
 import {
 	type MemcachedStore,
 	defineMemcachedStore,
@@ -22,22 +23,25 @@ describe(
 	{ sequential: true, concurrent: false },
 	async () => {
 		let memcachedStore: MemcachedStore;
+		let startedContainer: StartedMemcachedContainer;
 
 		beforeAll(async () => {
 			const store = defineMemcachedStore("test-memcached-set");
 			memcachedStore = store;
+			await store.container.start();
 		});
 
 		afterAll(async () => {
 			if (memcachedStore) {
 				memcachedStore.client.shutdown();
-				await memcachedStore.container.stop();
+			}
+			if (startedContainer) {
+				await startedContainer.stop();
 			}
 		});
 
 		beforeEach<MemcachedTestContext>(async (context) => {
 			context.store = memcachedStore;
-			await context.store.container.start();
 		});
 
 		afterEach<MemcachedTestContext>(async (context) => {

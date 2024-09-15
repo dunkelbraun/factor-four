@@ -1,38 +1,82 @@
-import getPort, { portNumbers } from "get-port";
-import { GenericContainer, type StartedTestContainer } from "testcontainers";
+import { kebabCase, snakeCase } from "case-anything";
+import path from "path";
+import { Container } from "~/_lib/container.js";
+import { StartedServerContainerWithWebUI } from "~/_lib/started-container.js";
 
-export class RedisContainer {
-	#envVarName: string;
-	#testContainerImage: string = "redis";
-	#testContainerImageTag: string = "alpine";
-	#startedTestContainer?: StartedTestContainer;
+const REDIS_IMAGE_NAME = "redis/redis-stack";
+const REDIS_IMAGE_TAG = "latest";
+const REDIS_SERVER_PORT = 6379;
+const REDIS_WEB_UI_PORT = 8001;
 
-	constructor(envVarName: string) {
-		this.#envVarName = envVarName;
-	}
+export interface RedisContainerOptions {
+	resourceId: string;
+	imageTag?: string;
+	connectionStringEnvVarName?: string;
+}
 
-	async start() {
-		const { container, hostPort, connectionString } = await this.#container();
-		const startedContainer = await container.start();
+export class RedisContainer extends Container {
+	#connectionStringEnvVarName?: string;
 
-		if (this.#startedTestContainer === undefined) {
-			this.#startedTestContainer = startedContainer;
+	constructor(options: RedisContainerOptions) {
+		const name = snakeCase(`redis_${options.resourceId}`);
+		const image = {
+			name: REDIS_IMAGE_NAME,
+			tag: options.imageTag ?? REDIS_IMAGE_TAG,
+		};
+		const portsToExpose = [REDIS_SERVER_PORT, REDIS_WEB_UI_PORT];
+		const persistenceVolumes = [
+			{
+				source: path.join("/tmp", kebabCase(`${options.resourceId}-data`)),
+				target: "/data",
+			},
+		];
+		super({ name, image, portsToExpose, persistenceVolumes });
+
+		if (options.connectionStringEnvVarName) {
+			this.#connectionStringEnvVarName = options.connectionStringEnvVarName;
 		}
-		process.env[this.#envVarName] = connectionString;
-		return { hostPort, connectionString };
 	}
 
-	async stop() {
-		this.#startedTestContainer !== undefined &&
-			(await this.#startedTestContainer.stop());
+	override async start(): Promise<StartedRedisContainer> {
+		return new StartedRedisContainer(await super.start(), (container) =>
+			this.#addConnectionStringToEnvironment(container),
+		);
 	}
 
-	async #container() {
-		const hostPort = await getPort({ port: portNumbers(6379, 6389) });
-		const connectionString = `redis://localhost:${hostPort}`;
-		const container = new GenericContainer(
-			`${this.#testContainerImage}:${this.#testContainerImageTag}`,
-		).withExposedPorts({ container: 6379, host: hostPort });
-		return { container, hostPort, connectionString };
+	async startPersisted(): Promise<StartedRedisContainer> {
+		return new StartedRedisContainer(
+			await super.startWithVolumes(),
+			(container) => this.#addConnectionStringToEnvironment(container),
+		);
+	}
+
+	#addConnectionStringToEnvironment(container: StartedRedisContainer) {
+		if (this.#connectionStringEnvVarName) {
+			process.env[this.#connectionStringEnvVarName] = container.connectionURL;
+		}
+	}
+}
+
+export class StartedRedisContainer extends StartedServerContainerWithWebUI<StartedRedisContainer> {
+	get serverPort() {
+		return this.getMappedPort(REDIS_SERVER_PORT);
+	}
+
+	get webUIPort() {
+		return this.getMappedPort(REDIS_WEB_UI_PORT);
+	}
+
+	get connectionURL() {
+		const url = new URL("", "redis://");
+		url.hostname = this.getHost();
+		url.port = this.serverPort.toString();
+		return url.toString();
+	}
+
+	get webURL() {
+		const url = new URL("", "http://base.com");
+		url.hostname = this.getHost();
+		url.port = this.webUIPort.toString();
+		return url.toString();
 	}
 }

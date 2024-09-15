@@ -7,6 +7,7 @@ import {
 	describe,
 	test,
 } from "vitest";
+import type { StartedRedisContainer } from "~/key-value-stores/redis/container.js";
 import {
 	RedisStore,
 	defineRedisStore,
@@ -18,18 +19,18 @@ interface RedisTestContext {
 
 describe("Redis store", { sequential: true, concurrent: false }, async () => {
 	let redisStore: RedisStore;
+	let startedContainer: StartedRedisContainer;
 
 	beforeAll(async () => {
 		const store = defineRedisStore("test-redis");
 		redisStore = store;
-		await store.container.start();
+		startedContainer = await store.container.start();
 		await store.client.connect();
 	});
 
 	afterAll(async () => {
-		if (redisStore) {
-			redisStore.client.disconnect();
-			await redisStore.container.stop();
+		if (startedContainer) {
+			await startedContainer.stop();
 		}
 	});
 

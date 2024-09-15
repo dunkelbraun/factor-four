@@ -11,7 +11,10 @@ export class SMTPMailer {
 	container: SMTPContainer;
 
 	constructor(public id: string) {
-		this.container = new SMTPContainer(this.credentialsEnvVar);
+		this.container = new SMTPContainer({
+			resourceId: id,
+			connectionStringEnvVarName: this.credentialsEnvVar,
+		});
 	}
 
 	get transporter() {

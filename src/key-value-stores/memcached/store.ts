@@ -10,9 +10,12 @@ export class MemcachedStore {
 
 	container: MemcachedContainer;
 
-	constructor(name: string, clientOptions?: MemcacheClientOptions) {
-		this.id = name;
-		this.container = new MemcachedContainer(this.credentialsEnvVar);
+	constructor(id: string, clientOptions?: MemcacheClientOptions) {
+		this.id = id;
+		this.container = new MemcachedContainer({
+			resourceId: id,
+			connectionStringEnvVarName: this.credentialsEnvVar,
+		});
 	}
 
 	/**

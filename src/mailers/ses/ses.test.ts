@@ -1,20 +1,20 @@
 import { afterAll, assert, beforeAll, test } from "vitest";
-import type { SESContainerInfo } from "~/mailers/ses/container.js";
+import type { StartedSESContainer } from "~/mailers/ses/container.js";
 import { defineSESMailer, type SESMailer } from "~/mailers/ses/ses.js";
 import { sesEmails } from "~/mailers/ses/testing.js";
 
 let sesMailer: SESMailer;
-let sesContainerInfo: SESContainerInfo;
+let startedContainer: StartedSESContainer;
 
 beforeAll(async () => {
 	process.env.F4_ENV = "local";
 	const ses = defineSESMailer("test-ses");
 	sesMailer = ses;
-	sesContainerInfo = await ses.container.start();
+	startedContainer = await ses.container.start();
 });
 
 afterAll(async () => {
-	await sesMailer.container.stop();
+	await startedContainer.stop();
 });
 
 test("send emails", async () => {
@@ -38,7 +38,7 @@ test("send emails", async () => {
 		},
 	});
 
-	const emails = await sesEmails(sesContainerInfo.hostPort);
+	const emails = await sesEmails(startedContainer.serverPort);
 	assert.strictEqual(emails.length, 1);
 
 	const email = emails.at(0);

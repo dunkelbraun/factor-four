@@ -2,47 +2,68 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { GenericContainer } from "testcontainers";
 
-import getPort, { portNumbers } from "get-port";
-import { type StartedTestContainer } from "testcontainers";
+import { snakeCase } from "case-anything";
+import { Container } from "~/_lib/container.js";
+import { StartedServerContainerWithWebUI } from "~/_lib/started-container.js";
 
-export interface SESContainerInfo {
-	hostPort: number;
+const SES_SERVER_PORT = 8005;
+
+export interface SESContainerOptions {
+	resourceId: string;
+	connectionStringEnvVarName: string;
 }
 
-export class SESContainer {
-	#startedTestContainer?: StartedTestContainer;
+export class SESContainer extends Container {
+	#connectionStringEnvVarName: string;
 
-	async start() {
-		const { container, hostPort } = await this.#container();
-		const startedContainer = await container.start();
-
-		if (this.#startedTestContainer === undefined) {
-			this.#startedTestContainer = startedContainer;
-		}
-		process.env.SES_MAILER_PORT = String(hostPort);
-		return { hostPort } as SESContainerInfo;
-	}
-
-	async stop() {
-		this.#startedTestContainer !== undefined &&
-			(await this.#startedTestContainer.stop());
-	}
-
-	async #container() {
-		const container = await buildSESLocalContainer();
-		const port = await getPort({ port: portNumbers(8005, 8100) });
-		return {
-			container: container
-				.withEnvironment({
-					AWS_SES_ACCOUNT: process.env.AWS_SES_ACCOUNT ?? "",
-					SMTP_TRANSPORT: process.env.SMTP_TRANSPORT ?? "",
-				})
-				.withExposedPorts({
-					host: port,
-					container: 8005,
-				}),
-			hostPort: port,
+	constructor(options: SESContainerOptions) {
+		const name = snakeCase(`ses_${options.resourceId}`);
+		const image = {
+			name: "aws-ses-local",
+			tag: "latest",
 		};
+		const portsToExpose = [SES_SERVER_PORT];
+		super({ name, image, portsToExpose, persistenceVolumes: [] });
+
+		this.#connectionStringEnvVarName = options.connectionStringEnvVarName;
+	}
+
+	override async start(): Promise<StartedSESContainer> {
+		await buildSESLocalContainer();
+		return new StartedSESContainer(
+			await super.start(),
+			(container) =>
+				(process.env[this.#connectionStringEnvVarName] =
+					container.connectionURL),
+		);
+	}
+
+	async startPersisted(): Promise<StartedSESContainer> {
+		await buildSESLocalContainer();
+		return new StartedSESContainer(
+			await super.startWithVolumes(),
+			(container) => (process.env["SES_MAILER_URL"] = container.connectionURL),
+		);
+	}
+}
+export class StartedSESContainer extends StartedServerContainerWithWebUI<StartedSESContainer> {
+	get serverPort() {
+		return this.getMappedPort(SES_SERVER_PORT);
+	}
+
+	get webUIPort() {
+		return this.serverPort;
+	}
+
+	get connectionURL() {
+		const url = new URL("", "http://base.com");
+		url.hostname = this.getHost();
+		url.port = this.serverPort.toString();
+		return url.toString();
+	}
+
+	get webURL() {
+		return this.connectionURL;
 	}
 }
 

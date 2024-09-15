@@ -16,9 +16,13 @@ export class RedisStore {
 
 	container: RedisContainer;
 
-	constructor(name: string) {
-		this.id = name;
-		this.container = new RedisContainer(this.credentialsEnvVar);
+	constructor(id: string) {
+		this.id = id;
+		this.container = new RedisContainer({
+			resourceId: this.id,
+			imageTag: "latest",
+			connectionStringEnvVarName: this.credentialsEnvVar,
+		});
 	}
 
 	/**

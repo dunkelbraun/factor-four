@@ -1,4 +1,5 @@
 import { SES } from "@aws-sdk/client-ses";
+import { snakeCase } from "case-anything";
 import { SESContainer } from "~/mailers/ses/container.js";
 
 /**
@@ -9,8 +10,17 @@ import { SESContainer } from "~/mailers/ses/container.js";
  */
 export class SESMailer {
 	container: SESContainer;
+
+	#connectionStringEnvVarName: string;
+
 	constructor(public id: string) {
-		this.container = new SESContainer();
+		this.#connectionStringEnvVarName = snakeCase(
+			`ses_mailer_${id}_url`,
+		).toUpperCase();
+		this.container = new SESContainer({
+			resourceId: id,
+			connectionStringEnvVarName: this.#connectionStringEnvVarName,
+		});
 	}
 
 	#client?: SES;
@@ -20,7 +30,7 @@ export class SESMailer {
 			this.#client = new SES({
 				...(process.env.F4_ENV === "local"
 					? {
-							endpoint: `http://localhost:${process.env["SES_MAILER_PORT"]}`,
+							endpoint: process.env[this.#connectionStringEnvVarName],
 							region: "aws-ses-v2-local",
 							credentials: {
 								accessKeyId: "ANY_STRING",

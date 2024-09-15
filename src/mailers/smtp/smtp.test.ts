@@ -1,31 +1,28 @@
 import { afterAll, afterEach, assert, beforeAll, test } from "vitest";
 import type {
 	SMTPContainer,
-	SMTPContainerInfo,
+	StartedSMTPContainer,
 } from "~/mailers/smtp/container.js";
 import { defineSMTPMailer, SMTPMailer } from "~/mailers/smtp/smtp.js";
-import {
-	deleteMailpitMessages,
-	mailpitMessages,
-} from "~/mailers/smtp/testing.js";
+import { allMessages, deleteAllMessages } from "~/mailers/smtp/testing.js";
 
 let testMailer: SMTPMailer;
 let testContainer: SMTPContainer;
-let containerInfo: SMTPContainerInfo;
+let startedContainer: StartedSMTPContainer;
 
 beforeAll(async () => {
 	const mailer = defineSMTPMailer("test-mailer");
 	testMailer = mailer;
 	testContainer = mailer.container;
-	containerInfo = await testContainer.start();
+	startedContainer = await testContainer.start();
 });
 
 afterAll(async () => {
-	await testContainer.stop();
+	await startedContainer.stop();
 });
 
 afterEach(async () => {
-	await deleteMailpitMessages(containerInfo.hostPorts.web);
+	await deleteAllMessages(startedContainer);
 });
 
 test("mailerId", async (context) => {
@@ -47,8 +44,7 @@ test("send emails through smtp server", async () => {
 		text: "Another message!",
 	});
 
-	const messages = (await mailpitMessages(containerInfo.hostPorts.web))
-		.messages;
+	const messages = (await allMessages(startedContainer)).messages;
 	assert.equal(messages.length, 2);
 
 	const firstMessage = messages.at(-1);

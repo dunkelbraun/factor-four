@@ -1,52 +1,97 @@
-import getPort, { portNumbers } from "get-port";
-import { GenericContainer, type StartedTestContainer } from "testcontainers";
+import { kebabCase, snakeCase } from "case-anything";
+import path from "node:path";
+import { Container } from "~/_lib/container.js";
+import { StartedServerContainerWithWebUI } from "~/_lib/started-container.js";
 
-export interface SMTPContainerInfo {
-	hostPorts: {
-		smtp: number;
-		web: number;
-	};
-	connectionString: string;
+const SMTP_IMAGE_NAME = "axllent/mailpit";
+const SMTP_IMAGE_TAG = "latest";
+const SMTP_SERVER_PORT = 1025;
+const SMTP_WEB_PORT = 8025;
+
+export interface SMTPContainerOptions {
+	resourceId: string;
+	imageTag?: string;
+	connectionStringEnvVarName?: string;
 }
 
-export class SMTPContainer {
-	#envVarName: string;
-	#testContainerImage: string = "axllent/mailpit";
-	#testContainerImageTag: string = "latest";
-	#startedTestContainer?: StartedTestContainer;
+export class SMTPContainer extends Container {
+	#connectionStringEnvVarName?: string;
 
-	constructor(envVarName: string) {
-		this.#envVarName = envVarName;
-	}
-
-	async start() {
-		const { container, hostPorts, connectionString } = await this.#container();
-		const startedContainer = await container.start();
-
-		if (this.#startedTestContainer === undefined) {
-			this.#startedTestContainer = startedContainer;
-		}
-		process.env[this.#envVarName] = connectionString;
-		return { hostPorts, connectionString } as SMTPContainerInfo;
-	}
-
-	async stop() {
-		this.#startedTestContainer !== undefined &&
-			(await this.#startedTestContainer.stop());
-	}
-
-	async #container() {
-		const hostPorts = {
-			smtp: await getPort({ port: portNumbers(1025, 1100) }),
-			web: await getPort({ port: portNumbers(8025, 8100) }),
+	constructor(options: SMTPContainerOptions) {
+		const name = snakeCase(`smtp_${options.resourceId}`);
+		const image = {
+			name: SMTP_IMAGE_NAME,
+			tag: options.imageTag ?? SMTP_IMAGE_TAG,
 		};
-		const connectionString = `smtp://username:password@localhost:${hostPorts.smtp}`;
-		const container = new GenericContainer(
-			`${this.#testContainerImage}:${this.#testContainerImageTag}`,
-		)
-			.withExposedPorts({ container: 1025, host: hostPorts.smtp })
-			.withExposedPorts({ container: 8025, host: hostPorts.web });
+		const portsToExpose = [SMTP_SERVER_PORT, SMTP_WEB_PORT];
+		const persistenceVolumes = [
+			{
+				source: path.join("/tmp", kebabCase(`${options.resourceId}-data`)),
+				target: "/data",
+			},
+		];
+		super({ name, image, portsToExpose, persistenceVolumes });
 
-		return { container, hostPorts, connectionString };
+		if (options.connectionStringEnvVarName) {
+			this.#connectionStringEnvVarName = options.connectionStringEnvVarName;
+		}
+	}
+
+	override async start(): Promise<StartedSMTPContainer> {
+		return new StartedSMTPContainer(await super.start(), (container) =>
+			this.#addConnectionStringToEnvironment(container),
+		);
+	}
+
+	async startPersisted(): Promise<StartedSMTPContainer> {
+		this.#addDatabaseEnvVar();
+		return new StartedSMTPContainer(
+			await super.startWithVolumes(),
+			(container) => this.#addConnectionStringToEnvironment(container),
+		);
+	}
+
+	#addDatabaseEnvVar() {
+		this.withEnvironment({
+			MP_DATABASE: "/data/database.db",
+		});
+	}
+
+	#addConnectionStringToEnvironment(container: StartedSMTPContainer) {
+		if (this.#connectionStringEnvVarName) {
+			process.env[this.#connectionStringEnvVarName] = container.connectionURL;
+		}
+	}
+}
+
+export class StartedSMTPContainer extends StartedServerContainerWithWebUI<StartedSMTPContainer> {
+	get serverPort() {
+		return this.getMappedPort(SMTP_SERVER_PORT);
+	}
+
+	get webUIPort() {
+		return this.getMappedPort(SMTP_WEB_PORT);
+	}
+
+	get connectionURL() {
+		const url = new URL("", "smtp://");
+		url.hostname = this.getHost();
+		url.port = this.serverPort.toString();
+		url.username = "username";
+		url.password = "password";
+		return url.toString();
+	}
+
+	get webURL() {
+		const url = new URL("", "http://base.com");
+		url.hostname = this.getHost();
+		url.port = this.webUIPort.toString();
+		return url.toString();
+	}
+
+	get messagesApiURL() {
+		const url = new URL(this.webURL);
+		url.pathname = "api/v1/messages";
+		return url.toString();
 	}
 }
