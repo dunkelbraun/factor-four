@@ -11,7 +11,7 @@ beforeAll(async () => {
 	const ses = defineSESMailer("test-ses");
 	sesMailer = ses;
 	startedContainer = await ses.container.start();
-});
+}, 100000);
 
 // afterAll(async () => {
 // 	if (startedContainer) {
