@@ -21,3 +21,4 @@ export {
 	type SMTPContainerOptions,
 } from "./mailers/smtp/container.js";
 export { defineSMTPMailer, type SMTPMailer } from "./mailers/smtp/smtp.js";
+export { startResources, stopResources } from "./resources.js";
