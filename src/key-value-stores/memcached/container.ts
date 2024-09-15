@@ -6,7 +6,7 @@ const MEMCACHED_IMAGE_NAME = "memcached";
 const MEMCACHED_IMAGE_TAG = "alpine";
 const MEMCACHED_SERVER_PORT = 11211;
 
-export interface SMTPContainerOptions {
+export interface MemcachedContainerOptions {
 	resourceId: string;
 	imageTag?: string;
 	connectionStringEnvVarName?: string;
@@ -15,7 +15,7 @@ export interface SMTPContainerOptions {
 export class MemcachedContainer extends Container {
 	#connectionStringEnvVarName?: string;
 
-	constructor(options: SMTPContainerOptions) {
+	constructor(options: MemcachedContainerOptions) {
 		const name = snakeCase(`smtp_${options.resourceId}`);
 		const image = {
 			name: MEMCACHED_IMAGE_NAME,
