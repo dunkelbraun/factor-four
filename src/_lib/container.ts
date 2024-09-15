@@ -8,11 +8,19 @@ export interface ContainerOptions {
 	persistenceVolumes?: { source: string; target: string }[];
 }
 
+/**
+ * **Not to be used directly.**
+ *
+ * Use constructor functions instead.
+ */
 export class Container extends GenericContainer {
 	name: string;
 	portsToExpose: number[];
 	persistenceVolumes: { source: string; target: string }[];
 
+	/**
+	 * @hideconstructor
+	 */
 	constructor(options: ContainerOptions) {
 		super(`${options.image.name}:${options.image.tag}`);
 		this.name = options.name;
@@ -20,12 +28,18 @@ export class Container extends GenericContainer {
 		this.persistenceVolumes = options.persistenceVolumes ?? [];
 	}
 
+	/**
+	 * Starts the container.
+	 */
 	override async start() {
 		await this.#exposePorts();
 		this.#addLabel();
 		return await super.start();
 	}
 
+	/**
+	 * Starts the container with mounted volumes.
+	 */
 	async startWithVolumes() {
 		await this.#exposePorts();
 		this.#addLabel();
@@ -64,11 +78,17 @@ export class Container extends GenericContainer {
 		});
 	}
 
+	/**
+	 * Returns true if the container is running.
+	 */
 	static async isRunning(container: Container) {
 		const runningContainer = await this.#fetchContainerByName(container);
 		return runningContainer !== undefined;
 	}
 
+	/**
+	 * Stops a container.
+	 */
 	static async stop(container: Container) {
 		const runningContainer = await this.#fetchContainerByName(container);
 		if (runningContainer) {
