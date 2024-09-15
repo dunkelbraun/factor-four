@@ -1,3 +1,3 @@
 # factor-four
 
-Typescript interfaces for web application backing services.
+Backing services as first-class citizens in TypeScript applications.
