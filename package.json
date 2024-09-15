@@ -64,7 +64,6 @@
 		"prettier": "^3.3.3",
 		"prettier-plugin-organize-imports": "^4.0.0",
 		"skott": "^0.35.2",
-		"testcontainers": "^10.13.1",
 		"tsc-alias": "^1.8.10",
 		"type-fest": "^4.25.0",
 		"type-testing": "^0.2.0",
@@ -81,11 +80,13 @@
 		"tsx": "^4.19.1"
 	},
 	"dependencies": {
-		"@aws-sdk/client-ses": "^3.650.0",
+		"testcontainers": "^10.13.1",
 		"@epic-web/remember": "^1.1.0",
-		"aws-ses-v2-local": "^2.4.0",
 		"case-anything": "^3.1.0",
-		"get-port": "^7.1.0",
+		"get-port": "^7.1.0"
+	},
+	"peerDependencies": {
+		"@aws-sdk/client-ses": "^3.650.0",
 		"memcache-client": "^1.0.5",
 		"memcached": "^2.2.2",
 		"redis": "^4.7.0"
