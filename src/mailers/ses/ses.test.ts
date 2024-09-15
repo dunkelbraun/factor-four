@@ -1,4 +1,4 @@
-import { afterAll, assert, beforeAll, test } from "vitest";
+import { assert, beforeAll, test } from "vitest";
 import type { StartedSESContainer } from "~/mailers/ses/container.js";
 import { defineSESMailer, type SESMailer } from "~/mailers/ses/ses.js";
 import { sesEmails } from "~/mailers/ses/testing.js";
@@ -13,11 +13,11 @@ beforeAll(async () => {
 	startedContainer = await ses.container.start();
 });
 
-afterAll(async () => {
-	if (startedContainer) {
-		await startedContainer.stop();
-	}
-});
+// afterAll(async () => {
+// 	if (startedContainer) {
+// 		await startedContainer.stop();
+// 	}
+// });
 
 test("send emails", async () => {
 	await sesMailer.client.sendEmail({

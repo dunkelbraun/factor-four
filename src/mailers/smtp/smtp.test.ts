@@ -1,4 +1,4 @@
-import { afterAll, afterEach, assert, beforeAll, test } from "vitest";
+import { afterEach, assert, beforeAll, test } from "vitest";
 import type {
 	SMTPContainer,
 	StartedSMTPContainer,
@@ -15,10 +15,6 @@ beforeAll(async () => {
 	testMailer = mailer;
 	testContainer = mailer.container;
 	startedContainer = await testContainer.start();
-});
-
-afterAll(async () => {
-	await startedContainer.stop();
 });
 
 afterEach(async () => {

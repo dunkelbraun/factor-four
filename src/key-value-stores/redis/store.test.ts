@@ -1,5 +1,4 @@
 import {
-	afterAll,
 	afterEach,
 	assert,
 	beforeAll,
@@ -7,7 +6,6 @@ import {
 	describe,
 	test,
 } from "vitest";
-import type { StartedRedisContainer } from "~/key-value-stores/redis/container.js";
 import {
 	RedisStore,
 	defineRedisStore,
@@ -19,27 +17,27 @@ interface RedisTestContext {
 
 describe("Redis store", { sequential: true, concurrent: false }, async () => {
 	let redisStore: RedisStore;
-	let startedContainer: StartedRedisContainer;
 
 	beforeAll(async () => {
 		const store = defineRedisStore("test-redis");
 		redisStore = store;
-		startedContainer = await store.container.start();
-		await store.client.connect();
+		await store.container.start();
 	});
 
-	afterAll(async () => {
-		if (startedContainer) {
-			await startedContainer.stop();
-		}
-	});
+	// afterAll(async () => {
+	// 	if (startedContainer) {
+	// 		await startedContainer.stop();
+	// 	}
+	// });
 
 	beforeEach<RedisTestContext>(async (context) => {
 		context.store = redisStore;
+		await context.store.client.connect();
 	});
 
 	afterEach<RedisTestContext>(async (context) => {
 		await context.store.client.FLUSHDB();
+		await context.store.client.disconnect();
 	});
 
 	test<RedisTestContext>("client commands", async (context) => {
