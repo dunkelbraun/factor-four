@@ -4,12 +4,19 @@ import { MemcacheClient, type MemcacheClientOptions } from "memcache-client";
 import { MemcachedContainer } from "~/key-value-stores/memcached/container.js";
 
 export class MemcachedStore {
+	/** ID of the {@link MemcachedStore}. */
 	id: string;
 
 	#client?: MemcacheClient;
 
+	/**
+	 * Container for the {@link MemcachedStore}.
+	 */
 	container: MemcachedContainer;
 
+	/**
+	 * @hideconstructor
+	 */
 	constructor(id: string, clientOptions?: MemcacheClientOptions) {
 		this.id = id;
 		this.container = new MemcachedContainer({
@@ -19,7 +26,7 @@ export class MemcachedStore {
 	}
 
 	/**
-	 * Returns the MemcacheClient for the MemcacheStore
+	 * Returns a {@link https://www.npmjs.com/package/memcache-client | memcache-client } for the {@link MemcachedStore}.
 	 */
 	get client() {
 		if (this.#client === undefined) {
@@ -35,6 +42,12 @@ export class MemcachedStore {
 
 	/**
 	 * Returns the environment variable name that should contain the Memcached instance URL.
+	 *
+	 * The client will connect to the memcached instance with this environment variable.
+	 *
+	 * @remarks
+	 *
+	 * Each {@link MemcachedStore} has a unique environment variable name (as long unique IDs are used).
 	 */
 	get credentialsEnvVar() {
 		return `MEMCACHED_${snakeCase(this.id).toUpperCase()}_URL`;
