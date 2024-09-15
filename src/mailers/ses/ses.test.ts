@@ -14,7 +14,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-	await startedContainer.stop();
+	if (startedContainer) {
+		await startedContainer.stop();
+	}
 });
 
 test("send emails", async () => {
