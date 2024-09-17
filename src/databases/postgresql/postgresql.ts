@@ -13,7 +13,7 @@ export class PostgreSQLDatabase {
 			resourceId: id,
 			connectionStringEnvVarNames: [
 				this.credentialsEnvVar,
-				this.#monoPgCredentialsEnvVar,
+				this.monoPgCredentialsEnvVar,
 			],
 		});
 	}
@@ -24,7 +24,7 @@ export class PostgreSQLDatabase {
 		return `DATABASE_${snakeCase(this.id).toUpperCase()}_URL`;
 	}
 
-	get #monoPgCredentialsEnvVar() {
+	get monoPgCredentialsEnvVar() {
 		return `MONO_PG_${snakeCase(this.id).toUpperCase()}_DATABASE_URL`;
 	}
 }

@@ -12,15 +12,15 @@ import { readEnvVar } from "~/read-env.js";
 export class SESMailer {
 	container: SESContainer;
 
-	#connectionStringEnvVarName: string;
+	connectionStringEnvVarName: string;
 
 	constructor(public id: string) {
-		this.#connectionStringEnvVarName = snakeCase(
+		this.connectionStringEnvVarName = snakeCase(
 			`ses_mailer_${id}_url`,
 		).toUpperCase();
 		this.container = new SESContainer({
 			resourceId: id,
-			connectionStringEnvVarName: this.#connectionStringEnvVarName,
+			connectionStringEnvVarName: this.connectionStringEnvVarName,
 		});
 	}
 
@@ -31,7 +31,7 @@ export class SESMailer {
 			this.#client = new SES({
 				...(process.env.F4_ENV === "local"
 					? {
-							endpoint: readEnvVar(this.#connectionStringEnvVarName),
+							endpoint: readEnvVar(this.connectionStringEnvVarName),
 							region: "aws-ses-v2-local",
 							credentials: {
 								accessKeyId: "ANY_STRING",
