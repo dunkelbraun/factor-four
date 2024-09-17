@@ -1,6 +1,6 @@
 {
 	"name": "@monolayer/factor-four",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"license": "MIT",
 	"type": "module",
 	"description": "Backing services as first-class citizens in TypeScript applications",
@@ -43,7 +43,9 @@
 		"typedoc": "typedoc --docsRoot docs/reference",
 		"typedoc:watch": "npm run typedoc -- --watch",
 		"predocs": "npm run typedoc",
-		"docs": "npm-run-all --parallel typedoc:watch docs:dev"
+		"docs": "npm-run-all --parallel typedoc:watch docs:dev",
+		"unpublish:local": "npm unpublish --registry http://localhost:4873 @monolayer/factor-four -f",
+		"publish:local": "npm publish --registry http://localhost:4873"
 	},
 	"devDependencies": {
 		"@aws-sdk/client-ses": "^3.650.0",
