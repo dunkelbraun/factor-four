@@ -1,4 +1,10 @@
 export { type Container, type ContainerOptions } from "./_lib/container.js";
+export { type PostgreSQLContainer } from "./databases/postgresql/container.js";
+export {
+	definePostgreSQLDatabase,
+	type PostgreSQLDatabase,
+} from "./databases/postgresql/postgresql.js";
+
 export {
 	type MemcachedContainer,
 	type MemcachedContainerOptions,
