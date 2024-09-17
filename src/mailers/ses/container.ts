@@ -5,6 +5,7 @@ import { GenericContainer } from "testcontainers";
 import { snakeCase } from "case-anything";
 import { Container } from "~/_lib/container.js";
 import { StartedServerContainerWithWebUI } from "~/_lib/started-container.js";
+import { updateEnvVar } from "~/write-env.js";
 
 const SES_SERVER_PORT = 8005;
 
@@ -30,22 +31,30 @@ export class SESContainer extends Container {
 
 	override async start(): Promise<StartedSESContainer> {
 		await buildSESLocalContainer();
-		return new StartedSESContainer(
-			await super.start(),
-			(container) =>
-				(process.env[this.#connectionStringEnvVarName] =
-					container.connectionURL),
-		);
+		const container = new StartedSESContainer(await super.start());
+		await this.#addConnectionStringToEnvironment(container);
+		return container;
 	}
 
 	async startPersisted(): Promise<StartedSESContainer> {
 		await buildSESLocalContainer();
-		return new StartedSESContainer(
-			await super.startWithVolumes(),
-			(container) => (process.env["SES_MAILER_URL"] = container.connectionURL),
-		);
+		const container = new StartedSESContainer(await super.startWithVolumes());
+		await this.#addConnectionStringToEnvironment(container);
+		return container;
+	}
+
+	async #addConnectionStringToEnvironment(container: StartedSESContainer) {
+		await updateEnvVar("SES_MAILER_URL", container.connectionURL);
+		process.env["SES_MAILER_URL"] = container.connectionURL;
+		if (this.#connectionStringEnvVarName) {
+			await updateEnvVar(
+				this.#connectionStringEnvVarName,
+				container.connectionURL,
+			);
+		}
 	}
 }
+
 export class StartedSESContainer extends StartedServerContainerWithWebUI<StartedSESContainer> {
 	get serverPort() {
 		return this.getMappedPort(SES_SERVER_PORT);

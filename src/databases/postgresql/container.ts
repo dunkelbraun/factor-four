@@ -2,6 +2,7 @@ import { kebabCase, snakeCase } from "case-anything";
 import path from "node:path";
 import { Container } from "~/_lib/container.js";
 import { StartedServerContainer } from "~/_lib/started-container.js";
+import { updateEnvVar } from "~/write-env.js";
 
 const POSTGRESQL_ = "postgres";
 const POSTGRESQL_IMAGE_TAG = "16.4-alpine";
@@ -41,17 +42,18 @@ export class PostgreSQLContainer extends Container {
 	}
 
 	override async start(): Promise<StartedPostgreSQLContainer> {
-		return new StartedPostgreSQLContainer(await super.start(), (container) =>
-			this.#addConnectionStringToEnvironment(container),
-		);
+		const container = new StartedPostgreSQLContainer(await super.start());
+		await this.#addConnectionStringToEnvironment(container);
+		return container;
 	}
 
 	async startPersisted(): Promise<StartedPostgreSQLContainer> {
 		this.#addDatabaseEnvVar();
-		return new StartedPostgreSQLContainer(
+		const container = new StartedPostgreSQLContainer(
 			await super.startWithVolumes(),
-			(container) => this.#addConnectionStringToEnvironment(container),
 		);
+		await this.#addConnectionStringToEnvironment(container);
+		return container;
 	}
 
 	#addDatabaseEnvVar() {
@@ -60,8 +62,11 @@ export class PostgreSQLContainer extends Container {
 		});
 	}
 
-	#addConnectionStringToEnvironment(container: StartedPostgreSQLContainer) {
+	async #addConnectionStringToEnvironment(
+		container: StartedPostgreSQLContainer,
+	) {
 		for (const envVarName of this.#connectionStringEnvVarNames ?? []) {
+			await updateEnvVar(envVarName, container.connectionURL);
 			process.env[envVarName] = container.connectionURL;
 		}
 	}

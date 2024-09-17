@@ -1,6 +1,7 @@
 import { snakeCase } from "case-anything";
 import { Container } from "~/_lib/container.js";
 import { StartedServerContainer } from "~/_lib/started-container.js";
+import { updateEnvVar } from "~/write-env.js";
 
 const MEMCACHED_IMAGE_NAME = "memcached";
 const MEMCACHED_IMAGE_TAG = "alpine";
@@ -30,20 +31,27 @@ export class MemcachedContainer extends Container {
 	}
 
 	override async start(): Promise<StartedMemcachedContainer> {
-		return new StartedMemcachedContainer(await super.start(), (container) =>
-			this.#addConnectionStringToEnvironment(container),
-		);
+		const container = new StartedMemcachedContainer(await super.start());
+		await this.#addConnectionStringToEnvironment(container);
+		return container;
 	}
 
 	async startPersisted(): Promise<StartedMemcachedContainer> {
-		return new StartedMemcachedContainer(
+		const container = new StartedMemcachedContainer(
 			await super.startWithVolumes(),
-			(container) => this.#addConnectionStringToEnvironment(container),
 		);
+		await this.#addConnectionStringToEnvironment(container);
+		return container;
 	}
 
-	#addConnectionStringToEnvironment(container: StartedMemcachedContainer) {
+	async #addConnectionStringToEnvironment(
+		container: StartedMemcachedContainer,
+	) {
 		if (this.#connectionStringEnvVarName) {
+			await updateEnvVar(
+				this.#connectionStringEnvVarName,
+				container.connectionURL,
+			);
 			process.env[this.#connectionStringEnvVarName] = container.connectionURL;
 		}
 	}

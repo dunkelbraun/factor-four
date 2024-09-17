@@ -2,6 +2,7 @@ import { kebabCase, snakeCase } from "case-anything";
 import path from "path";
 import { Container } from "~/_lib/container.js";
 import { StartedServerContainerWithWebUI } from "~/_lib/started-container.js";
+import { updateEnvVar } from "~/write-env.js";
 
 const REDIS_IMAGE_NAME = "redis/redis-stack";
 const REDIS_IMAGE_TAG = "latest";
@@ -38,20 +39,23 @@ export class RedisContainer extends Container {
 	}
 
 	override async start(): Promise<StartedRedisContainer> {
-		return new StartedRedisContainer(await super.start(), (container) =>
-			this.#addConnectionStringToEnvironment(container),
-		);
+		const container = new StartedRedisContainer(await super.start());
+		await this.#addConnectionStringToEnvironment(container);
+		return container;
 	}
 
 	async startPersisted(): Promise<StartedRedisContainer> {
-		return new StartedRedisContainer(
-			await super.startWithVolumes(),
-			(container) => this.#addConnectionStringToEnvironment(container),
-		);
+		const container = new StartedRedisContainer(await super.startWithVolumes());
+		await this.#addConnectionStringToEnvironment(container);
+		return container;
 	}
 
-	#addConnectionStringToEnvironment(container: StartedRedisContainer) {
+	async #addConnectionStringToEnvironment(container: StartedRedisContainer) {
 		if (this.#connectionStringEnvVarName) {
+			await updateEnvVar(
+				this.#connectionStringEnvVarName,
+				container.connectionURL,
+			);
 			process.env[this.#connectionStringEnvVarName] = container.connectionURL;
 		}
 	}

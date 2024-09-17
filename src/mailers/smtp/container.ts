@@ -2,6 +2,7 @@ import { kebabCase, snakeCase } from "case-anything";
 import path from "node:path";
 import { Container } from "~/_lib/container.js";
 import { StartedServerContainerWithWebUI } from "~/_lib/started-container.js";
+import { updateEnvVar } from "~/write-env.js";
 
 const SMTP_IMAGE_NAME = "axllent/mailpit";
 const SMTP_IMAGE_TAG = "latest";
@@ -38,17 +39,16 @@ export class SMTPContainer extends Container {
 	}
 
 	override async start(): Promise<StartedSMTPContainer> {
-		return new StartedSMTPContainer(await super.start(), (container) =>
-			this.#addConnectionStringToEnvironment(container),
-		);
+		const container = new StartedSMTPContainer(await super.start());
+		await this.#addConnectionStringToEnvironment(container);
+		return container;
 	}
 
 	async startPersisted(): Promise<StartedSMTPContainer> {
 		this.#addDatabaseEnvVar();
-		return new StartedSMTPContainer(
-			await super.startWithVolumes(),
-			(container) => this.#addConnectionStringToEnvironment(container),
-		);
+		const container = new StartedSMTPContainer(await super.startWithVolumes());
+		await this.#addConnectionStringToEnvironment(container);
+		return container;
 	}
 
 	#addDatabaseEnvVar() {
@@ -57,8 +57,12 @@ export class SMTPContainer extends Container {
 		});
 	}
 
-	#addConnectionStringToEnvironment(container: StartedSMTPContainer) {
+	async #addConnectionStringToEnvironment(container: StartedSMTPContainer) {
 		if (this.#connectionStringEnvVarName) {
+			await updateEnvVar(
+				this.#connectionStringEnvVarName,
+				container.connectionURL,
+			);
 			process.env[this.#connectionStringEnvVarName] = container.connectionURL;
 		}
 	}
