@@ -10,11 +10,11 @@ const POSTGRESQL_SERVER_PORT = 5432;
 export interface PostgreSQLContainerOptions {
 	resourceId: string;
 	imageTag?: string;
-	connectionStringEnvVarName?: string;
+	connectionStringEnvVarNames?: string[];
 }
 
 export class PostgreSQLContainer extends Container {
-	#connectionStringEnvVarName?: string;
+	#connectionStringEnvVarNames?: string[];
 
 	constructor(options: PostgreSQLContainerOptions) {
 		const name = snakeCase(`postgresql_${options.resourceId}`);
@@ -31,8 +31,8 @@ export class PostgreSQLContainer extends Container {
 		];
 		super({ name, image, portsToExpose, persistenceVolumes });
 
-		if (options.connectionStringEnvVarName) {
-			this.#connectionStringEnvVarName = options.connectionStringEnvVarName;
+		if (options.connectionStringEnvVarNames) {
+			this.#connectionStringEnvVarNames = options.connectionStringEnvVarNames;
 		}
 		this.withEnvironment({
 			POSTGRES_PASSWORD: "postgres",
@@ -61,8 +61,8 @@ export class PostgreSQLContainer extends Container {
 	}
 
 	#addConnectionStringToEnvironment(container: StartedPostgreSQLContainer) {
-		if (this.#connectionStringEnvVarName) {
-			process.env[this.#connectionStringEnvVarName] = container.connectionURL;
+		for (const envVarName of this.#connectionStringEnvVarNames ?? []) {
+			process.env[envVarName] = container.connectionURL;
 		}
 	}
 }

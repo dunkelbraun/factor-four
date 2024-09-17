@@ -11,7 +11,10 @@ export class PostgreSQLDatabase {
 	constructor(public id: string) {
 		this.container = new PostgreSQLContainer({
 			resourceId: id,
-			connectionStringEnvVarName: this.credentialsEnvVar,
+			connectionStringEnvVarNames: [
+				this.credentialsEnvVar,
+				this.#monoPgCredentialsEnvVar,
+			],
 		});
 	}
 	/**
@@ -19,6 +22,10 @@ export class PostgreSQLDatabase {
 	 */
 	get credentialsEnvVar() {
 		return `DATABASE_${snakeCase(this.id).toUpperCase()}_URL`;
+	}
+
+	get #monoPgCredentialsEnvVar() {
+		return `MONO_PG_${snakeCase(this.id).toUpperCase()}_DATABASE_URL`;
 	}
 }
 
