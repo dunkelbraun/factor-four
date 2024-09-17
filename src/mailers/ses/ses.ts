@@ -1,6 +1,7 @@
 import { SES } from "@aws-sdk/client-ses";
 import { snakeCase } from "case-anything";
 import { SESContainer } from "~/mailers/ses/container.js";
+import { readEnvVar } from "~/read-env.js";
 
 /**
  * SES `Mailer`.
@@ -30,7 +31,7 @@ export class SESMailer {
 			this.#client = new SES({
 				...(process.env.F4_ENV === "local"
 					? {
-							endpoint: process.env[this.#connectionStringEnvVarName],
+							endpoint: readEnvVar(this.#connectionStringEnvVarName),
 							region: "aws-ses-v2-local",
 							credentials: {
 								accessKeyId: "ANY_STRING",

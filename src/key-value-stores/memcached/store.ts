@@ -2,6 +2,7 @@ import { snakeCase } from "case-anything";
 import dotenv from "dotenv";
 import { MemcacheClient, type MemcacheClientOptions } from "memcache-client";
 import { MemcachedContainer } from "~/key-value-stores/memcached/container.js";
+import { readEnvVar } from "~/read-env.js";
 
 export class MemcachedStore {
 	/** ID of the {@link MemcachedStore}. */
@@ -34,7 +35,7 @@ export class MemcachedStore {
 			let readEnv = {} as Record<string, string>;
 			dotenv.config({ processEnv: readEnv });
 			this.#client = new MemcacheClient({
-				server: process.env[envVar] ?? "",
+				server: readEnvVar(envVar),
 			});
 		}
 		return this.#client as MemcacheClient;

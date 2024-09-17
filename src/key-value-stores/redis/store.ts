@@ -8,6 +8,7 @@ import {
 	type RedisScripts,
 } from "redis"; // Adjust based on your Redis library version and imports
 import { RedisContainer } from "~/key-value-stores/redis/container.js";
+import { readEnvVar } from "~/read-env.js";
 
 export class RedisStore {
 	id: string;
@@ -34,7 +35,7 @@ export class RedisStore {
 			let readEnv = {} as Record<string, string>;
 			dotenv.config({ processEnv: readEnv });
 			this.#client = createClient({
-				url: process.env[envVar],
+				url: readEnvVar(envVar),
 			}).on("error", (err) => console.error("Redis Client Error", err));
 		}
 		return this.#client;

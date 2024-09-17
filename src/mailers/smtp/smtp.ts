@@ -1,6 +1,7 @@
 import { snakeCase } from "case-anything";
 import nodemailer, { type Transporter } from "nodemailer";
 import { SMTPContainer } from "~/mailers/smtp/container.js";
+import { readEnvVar } from "~/read-env.js";
 
 /**
  * SMTP Mailer.
@@ -20,7 +21,7 @@ export class SMTPMailer {
 	get transporter() {
 		if (this.#transporter === undefined) {
 			this.#transporter = nodemailer.createTransport(
-				process.env[this.credentialsEnvVar],
+				readEnvVar(this.credentialsEnvVar),
 			);
 		}
 		return this.#transporter;
