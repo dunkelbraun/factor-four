@@ -37,6 +37,7 @@ export class RedisStore {
 			this.#client = createClient({
 				url: readEnvVar(envVar),
 			}).on("error", (err) => console.error("Redis Client Error", err));
+			this.#client.connect();
 		}
 		return this.#client;
 	}
