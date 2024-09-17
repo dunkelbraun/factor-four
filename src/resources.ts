@@ -6,6 +6,7 @@ import { MemcachedStore } from "~/key-value-stores/memcached/store.js";
 import { RedisStore } from "~/key-value-stores/redis/store.js";
 import { SESMailer } from "~/mailers/ses/ses.js";
 import { SMTPMailer } from "~/mailers/smtp/smtp.js";
+import { removeEnvVar } from "~/write-env.js";
 
 export async function startResources(folderPath: string) {
 	const resources = await importResources(folderPath);
@@ -36,18 +37,24 @@ export async function stopResources(folderPath: string) {
 		for (const resource of resources) {
 			if (isSMTPMailer(resource)) {
 				await Container.stop(resource.container);
+				await removeEnvVar(resource.credentialsEnvVar);
 			}
 			if (isSESMailer(resource)) {
 				await Container.stop(resource.container);
+				await removeEnvVar(resource.connectionStringEnvVarName);
 			}
 			if (isRedisStore(resource)) {
 				await Container.stop(resource.container);
+				await removeEnvVar(resource.credentialsEnvVar);
 			}
 			if (isMemcachedStore(resource)) {
 				await Container.stop(resource.container);
+				await removeEnvVar(resource.credentialsEnvVar);
 			}
 			if (isPostgreSQLDatabase(resource)) {
 				await Container.stop(resource.container);
+				await removeEnvVar(resource.credentialsEnvVar);
+				await removeEnvVar(resource.monoPgCredentialsEnvVar);
 			}
 		}
 	}
