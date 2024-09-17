@@ -53,7 +53,7 @@ export async function stopResources(folderPath: string) {
 	}
 }
 
-async function importResources(folderPath: string) {
+export async function importResources(folderPath: string) {
 	const files = await fs.readdir(folderPath, { recursive: true });
 
 	for (const fileName of files) {
