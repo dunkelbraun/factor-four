@@ -55,16 +55,19 @@ export async function stopResources(folderPath: string) {
 
 export async function importResources(folderPath: string) {
 	const files = await fs.readdir(folderPath, { recursive: true });
-
-	for (const fileName of files) {
+	return files.reduce<Promise<unknown[]>>(async (previousPromise, fileName) => {
+		let acc = await previousPromise;
 		if (
 			(fileName.endsWith(".ts") && !fileName.endsWith(".d.ts")) ||
 			(fileName.endsWith(".mts") && !fileName.endsWith(".d.mts"))
 		) {
-			const fileExports = await import(path.join(folderPath, fileName));
-			return Object.values(fileExports);
+			acc = [
+				...acc,
+				...Object.values(await import(path.join(folderPath, fileName))),
+			];
 		}
-	}
+		return acc;
+	}, Promise.resolve([]));
 }
 
 function isSMTPMailer(obj: unknown): obj is SMTPMailer {
