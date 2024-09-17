@@ -1,4 +1,8 @@
-export { type Container, type ContainerOptions } from "./_lib/container.js";
+export { Container, type ContainerOptions } from "./_lib/container.js";
+export {
+	StartedServerContainer,
+	StartedServerContainerWithWebUI,
+} from "./_lib/started-container.js";
 export { type PostgreSQLContainer } from "./databases/postgresql/container.js";
 export {
 	definePostgreSQLDatabase,
