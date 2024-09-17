@@ -11,13 +11,19 @@ export async function startResources(folderPath: string) {
 	const resources = await importResources(folderPath);
 	if (resources !== undefined) {
 		for (const resource of resources) {
-			if (
-				isSMTPMailer(resource) ||
-				isSESMailer(resource) ||
-				isRedisStore(resource) ||
-				isMemcachedStore(resource) ||
-				isPostgreSQLDatabase(resource)
-			) {
+			if (isSMTPMailer(resource)) {
+				await resource.container.startPersisted();
+			}
+			if (isSESMailer(resource)) {
+				await resource.container.startPersisted();
+			}
+			if (isRedisStore(resource)) {
+				await resource.container.startPersisted();
+			}
+			if (isMemcachedStore(resource)) {
+				await resource.container.startPersisted();
+			}
+			if (isPostgreSQLDatabase(resource)) {
 				await resource.container.startPersisted();
 			}
 		}
@@ -28,14 +34,20 @@ export async function stopResources(folderPath: string) {
 	const resources = await importResources(folderPath);
 	if (resources !== undefined) {
 		for (const resource of resources) {
-			if (
-				isSMTPMailer(resource) ||
-				isSESMailer(resource) ||
-				isRedisStore(resource) ||
-				isMemcachedStore(resource) ||
-				isPostgreSQLDatabase(resource)
-			) {
-				Container.stop(resource.container);
+			if (isSMTPMailer(resource)) {
+				await Container.stop(resource.container);
+			}
+			if (isSESMailer(resource)) {
+				await Container.stop(resource.container);
+			}
+			if (isRedisStore(resource)) {
+				await Container.stop(resource.container);
+			}
+			if (isMemcachedStore(resource)) {
+				await Container.stop(resource.container);
+			}
+			if (isPostgreSQLDatabase(resource)) {
+				await Container.stop(resource.container);
 			}
 		}
 	}
