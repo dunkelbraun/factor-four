@@ -4,8 +4,8 @@ import { Container } from "~/_lib/container.js";
 import { StartedServerContainer } from "~/_lib/started-container.js";
 import { updateEnvVar } from "~/write-env.js";
 
-const POSTGRESQL_ = "postgres";
-const POSTGRESQL_IMAGE_TAG = "16.4-alpine";
+const POSTGRESQL_ = "sibedge/postgres-plv8";
+const POSTGRESQL_IMAGE_TAG = "latest";
 const POSTGRESQL_SERVER_PORT = 5432;
 
 export interface PostgreSQLContainerOptions {
